@@ -1,19 +1,19 @@
 <?php
 
-namespace Momentum;
+namespace MLTK;
 
 /**
- * Автозагрузчик для пространства Momentum
+ * Автозагрузчик для пространства MLTK
  *
  * Class AutoLoader
  *
  * @author Roman Kulichkov <roman@kulichkov.pro>
  *
- * @package Momentum
+ * @package MLTK
  */
 class AutoLoader
 {
-	const PROJECT_NAMESPACE = 'Momentum';
+	const PROJECT_NAMESPACE = 'MLTK';
 
 	static private $recursiveSearch = true;
 
