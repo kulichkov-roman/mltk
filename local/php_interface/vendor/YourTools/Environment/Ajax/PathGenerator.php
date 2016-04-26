@@ -7,7 +7,7 @@ namespace Your\Environment\Ajax;
  *
  * Class PathGenerator
  *
- * @author Grigory Bychek <gbychek@gmail.com>
+ * @author Roman Kulichkov <roman@kulichkov.pro>
  *
  * @package Your\Environment\Ajax
  */

@@ -7,7 +7,7 @@ namespace Your\Data\Common\Persistence;
  *
  * Interface ObjectRepositoryInterface
  *
- * @author Grigory Bychek <gbychek@gmail.com>
+ * @author Roman Kulichkov <roman@kulichkov.pro>
  *
  * @package Your\Data\Common\Persistence
  */

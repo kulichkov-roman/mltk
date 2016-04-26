@@ -10,7 +10,7 @@ use Your\Tools\Data\Migration\Common\MigrationInterface;
  *
  * Class AbstractIBlockMigration
  *
- * @author Grigory Bychek <gbychek@gmail.com>
+ * @author Roman Kulichkov <roman@kulichkov.pro>
  *
  * @package Your\Tools\Data\Migration\Bitrix
  */

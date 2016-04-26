@@ -11,7 +11,7 @@ use Your\Environment\Configuration\ConfigurationInterface;
  *
  * Class EnvironmentManager
  *
- * @author Grigory Bychek <gbychek@gmail.com>
+ * @author Roman Kulichkov <roman@kulichkov.pro>
  *
  * @package Your\Environment
  */

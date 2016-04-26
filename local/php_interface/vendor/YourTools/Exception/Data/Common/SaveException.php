@@ -9,7 +9,7 @@ use Your\Common\Exception;
  *
  * Class SaveException
  *
- * @author Grigory Bychek <gbychek@gmail.com>
+ * @author Roman Kulichkov <roman@kulichkov.pro>
  *
  * @package Your\Exception\Data\Common
  */

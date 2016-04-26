@@ -7,7 +7,7 @@ namespace Your\Tools\Data\Migration\Common;
  *
  * Interface MigrationInterface
  *
- * @author Grigory Bychek <gbychek@gmail.com>
+ * @author Roman Kulichkov <roman@kulichkov.pro>
  *
  * @package Your\Tools\Data\Migration\Common
  */

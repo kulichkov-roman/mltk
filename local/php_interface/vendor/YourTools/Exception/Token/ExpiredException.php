@@ -7,7 +7,7 @@ namespace Your\Exception\Token;
  *
  * Class ExpiredException
  *
- * @author Grigory Bychek <gbychek@gmail.com>
+ * @author Roman Kulichkov <roman@kulichkov.pro>
  *
  * @package Your\Exception\Token
  */

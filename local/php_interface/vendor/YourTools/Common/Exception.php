@@ -7,7 +7,7 @@ namespace Your\Common;
  *
  * Class Exception
  *
- * @author Grigory Bychek <gbychek@gmail.com>
+ * @author Roman Kulichkov <roman@kulichkov.pro>
  *
  * @package Your\Common
  */

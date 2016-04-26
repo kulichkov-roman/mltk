@@ -7,7 +7,7 @@ namespace Your\Data\Common\Import;
  *
  * Interface ImporterInterface
  *
- * @author Grigory Bychek <gbychek@gmail.com>
+ * @author Roman Kulichkov <roman@kulichkov.pro>
  *
  * @package Your\Data\Common\Import
  */

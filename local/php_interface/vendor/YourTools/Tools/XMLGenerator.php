@@ -7,7 +7,7 @@ namespace Your\Tools;
  *
  * Class XMLGenerator
  *
- * @author Grigory Bychek <gbychek@gmail.com>
+ * @author Roman Kulichkov <roman@kulichkov.pro>
  *
  * @package Your\Tools
  */

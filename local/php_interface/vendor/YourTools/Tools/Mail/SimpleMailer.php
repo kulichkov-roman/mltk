@@ -9,7 +9,7 @@ namespace Your\Tools\Mail;
  *
  * @package Your\Tools\Mail
  *
- * @author Grigory Bychek <gbychek@gmail.com>
+ * @author Roman Kulichkov <roman@kulichkov.pro>
  */
 class SimpleMailer
 {

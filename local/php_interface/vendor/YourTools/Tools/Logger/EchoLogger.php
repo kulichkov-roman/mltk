@@ -9,7 +9,7 @@ use Your\Tools\LoggerInterface;
  *
  * Class EchoLogger
  *
- * @author Grigory Bychek <gbychek@gmail.com>
+ * @author Roman Kulichkov <roman@kulichkov.pro>
  *
  * @package Your\Tools\Logger
  */

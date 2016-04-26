@@ -10,7 +10,7 @@ use Your\Data\Common\Model;
  *
  * Class ValidationException
  *
- * @author Grigory Bychek <gbychek@gmail.com>
+ * @author Roman Kulichkov <roman@kulichkov.pro>
  *
  * @package Your\Exception\Data
  */

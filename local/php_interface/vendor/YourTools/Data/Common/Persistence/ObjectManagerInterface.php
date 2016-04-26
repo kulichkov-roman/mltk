@@ -11,7 +11,7 @@ use Your\Exception\Data\Common\SaveException;
  *
  * Interface ObjectManagerInterface
  *
- * @author Grigory Bychek <gbychek@gmail.com>
+ * @author Roman Kulichkov <roman@kulichkov.pro>
  *
  * @package Your\Data\Common\Persistence
  */

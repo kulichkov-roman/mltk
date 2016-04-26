@@ -2,7 +2,7 @@
 require_once 'vendor/YourTools/bootstrap.php';
 require_once 'classes/AutoLoader.php';
 
-\spl_autoload_register('\Momentum\AutoLoader::autoLoad');
+\spl_autoload_register('\MLTK\AutoLoader::autoLoad');
 
 $environment = \Your\Environment\EnvironmentManager::getInstance();
 

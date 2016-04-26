@@ -7,7 +7,7 @@ use Your\Common\Exception;
 /**
  * Class NotImplementedException
  *
- * @author Grigory Bychek <gbychek@gmail.com>
+ * @author Roman Kulichkov <roman@kulichkov.pro>
  *
  * @package Your\Exception\Common
  */

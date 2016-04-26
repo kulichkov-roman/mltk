@@ -7,7 +7,7 @@ namespace Momentum;
  *
  * Class AutoLoader
  *
- * @author Grigory Bychek <gbychek@gmail.com>
+ * @author Roman Kulichkov <roman@kulichkov.pro>
  *
  * @package Momentum
  */

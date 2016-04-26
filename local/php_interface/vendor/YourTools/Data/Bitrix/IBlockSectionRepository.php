@@ -9,7 +9,7 @@ use Your\Data\Common\Persistence\ObjectRepositoryInterface;
  *
  * Class IBlockSectionRepository
  *
- * @author Grigory Bychek <gbychek@gmail.com>
+ * @author Roman Kulichkov <roman@kulichkov.pro>
  *
  * @package Your\Data\Bitrix
  */

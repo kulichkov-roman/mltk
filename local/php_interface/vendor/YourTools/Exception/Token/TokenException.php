@@ -7,7 +7,7 @@ namespace Your\Exception\Token;
  *
  * Class TokenException
  *
- * @author Grigory Bychek <gbychek@gmail.com>
+ * @author Roman Kulichkov <roman@kulichkov.pro>
  *
  * @package Your\Exception\Token
  */

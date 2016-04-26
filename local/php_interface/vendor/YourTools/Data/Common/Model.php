@@ -7,7 +7,7 @@ namespace Your\Data\Common;
  *
  * Class Model
  *
- * @author Grigory Bychek <gbychek@gmail.com>
+ * @author Roman Kulichkov <roman@kulichkov.pro>
  *
  * @package Your\Data
  */
