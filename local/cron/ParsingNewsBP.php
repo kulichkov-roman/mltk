@@ -29,7 +29,15 @@ $arParams = array(
     'REFERER' => 'http://www.bigpowernews.ru/',
 );
 
-$curlInit = $source::loadUsingCurl($arParams);
+$htmlPage = $source->getPageCurl($arParams);
 
-echo "<pre>"; var_dump($arResult['HTML']); echo "</pre>";
+if($htmlPage)
+{
+    $count = $source->getCountNewsOnPage('table.sres');
+}
+else
+{
+    throw new \Exception('Полученная страница пуста');
+}
+
 ?>

@@ -4,6 +4,7 @@ namespace Your\Tools\Parser\News;
 use Your\Common\SingletonInterface;
 use Your\Tools\Parser\News\SourceFactory;
 use Your\Tools\Parser\News\SourceBP;
+use Your\Tools\Logger\FileLogger;
 
 /**
  * Импорт новостей
@@ -14,10 +15,27 @@ use Your\Tools\Parser\News\SourceBP;
  */
 class Parser implements SingletonInterface
 {
+    const USER_AGENT = 'Opera/10.00 (Windows NT 5.1; U; ru) Presto/2.2.0';
+
     /**
      * @var self
      */
     protected static $instance = null;
+
+    /**
+     * @var
+     */
+    protected $htmlPage;
+
+    /**
+     * @var
+     */
+    protected $objHtmlPage;
+
+    /**
+     * @var
+     */
+    protected $countNewsOnPage;
 
     /**
      * Фабрика для обработки источника импорта
@@ -69,33 +87,73 @@ class Parser implements SingletonInterface
     /**
      * @param $arParams
      *
-     * @return string
+     * @return bool
+     * @throws \Exception
      */
-    public static function loadUsingCurl($arParams)
+    public function getPageCurl($arParams)
     {
-        $curl = curl_init();
+        if($arParams['URL'])
+        {
+            $curl = curl_init();
 
-        curl_setopt($curl, CURLOPT_URL, $arParams['URL']);
-        curl_setopt($curl, CURLOPT_USERAGENT, "Opera/10.00 (Windows NT 5.1; U; ru) Presto/2.2.0");
-        curl_setopt($curl, CURLOPT_FAILONERROR, 1);
-        curl_setopt($curl, CURLOPT_TIMEOUT, 30);
-        curl_setopt($curl, CURLOPT_HEADER, 0);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, 1);
+            curl_setopt($curl, CURLOPT_URL, $arParams['URL']);
+            curl_setopt($curl, CURLOPT_USERAGENT, self::USER_AGENT);
+            curl_setopt($curl, CURLOPT_FAILONERROR, 1);
+            curl_setopt($curl, CURLOPT_TIMEOUT, 30);
+            curl_setopt($curl, CURLOPT_HEADER, 0);
+            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_setopt($curl, CURLOPT_FOLLOWLOCATION, 1);
 
-        ob_start ();
-        curl_exec($curl);
-        curl_close($curl);
-        $arResult = ob_get_contents();
-        ob_end_clean();
+            ob_start();
+            curl_exec($curl);
+            curl_close($curl);
 
-        return $arResult;
+            $this->htmlPage = ob_get_contents();
+
+            ob_end_clean();
+
+            return true;
+        }
+        else
+        {
+            throw new \Exception('Не задан параметр URL страницы');
+        }
     }
 
-    public static function findBlockNews($pattern)
+    /**
+     * @param $pattern
+     *
+     * @throws \Exception
+     */
+    public function getCountNewsOnPage($pattern)
     {
+        if($pattern)
+        {
+            $this->objHtmlPage = \phpQuery::newDocument($this->htmlPage);
 
+            if(is_object($this->objHtmlPage))
+            {
+                $this->countNewsOnPage = sizeof($this->objHtmlPage->find($pattern));
+
+                if($this->countNewsOnPage)
+                {
+                    return $this->countNewsOnPage;
+                }
+                else
+                {
+                    throw new \Exception('На странице по паттерну новостей не найденно');
+                }
+            }
+            else
+            {
+                throw new \Exception('Не удалось получить объект документа');
+            }
+        }
+        else
+        {
+            throw new \Exception('Паттерн не может быть пустым');
+        }
     }
 }
 ?>
