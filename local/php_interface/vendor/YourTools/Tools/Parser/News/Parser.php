@@ -45,6 +45,11 @@ class Parser implements SingletonInterface
     protected $sourceClass;
 
     /**
+     *
+     */
+    protected $arNewsList;
+
+    /**
      * @return self
      */
     public static function getInstance()
@@ -150,10 +155,68 @@ class Parser implements SingletonInterface
                 throw new \Exception('Не удалось получить объект документа');
             }
         }
-        else
+        return false;
+    }
+
+    /**
+     * Упаковка html в объект
+     *
+     * @param $html
+     * @param $pattern
+     *
+     * @return bool
+     */
+    public function htmlToArray($html, $pattern)
+    {
+        $obj = \phpQuery::newDocument($html);
+
+        $ar = array();
+        foreach ($obj->find($pattern) as $item)
+            $ar[] = $item;
+
+        if(sizeof($ar))
+            return $ar;
+
+        return false;
+    }
+
+    /**
+     * Получить html с список новостей
+     *
+     * @param $pattern
+     *
+     * @return bool
+     */
+    public function getHtmlNewsList($pattern, $count)
+    {
+        if($pattern)
         {
-            throw new \Exception('Паттерн не может быть пустым');
+            $htmlNewsList = $this->objHtmlPage->find($pattern);
+
+            $arNewsList = $this->getArNewsList($htmlNewsList, $pattern);
+
+
+
+            $fl = new FileLogger('parser.txt');
+            $fl->log($arNewsList);
+
+            $arTableNewList[] = trim(pq($this->objHtmlPage->find($pattern))->text());
+
         }
+        return false;
+    }
+
+    /**
+     * @param $pattern
+     * @param $count
+     */
+    public function getNewsDate($htmlNewsList, $pattern)
+    {
+        if($pattern)
+        {
+            $arDate = trim(pq($this->objHtmlPage->find($pattern))->text());
+        }
+        return false;
     }
 }
 ?>

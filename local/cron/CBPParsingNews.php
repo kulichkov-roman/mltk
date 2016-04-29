@@ -34,6 +34,18 @@ $htmlPage = $source->getPageCurl($arParams);
 if($htmlPage)
 {
     $count = $source->getCountNewsOnPage('table.sres');
+
+    if($count > 0)
+    {
+        if($source->getHtmlNewsList('table.sres', $count))
+        {
+
+        }
+    }
+    else
+    {
+        throw new \Exception('Количество новостей ноль');
+    }
 }
 else
 {
