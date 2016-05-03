@@ -30,12 +30,7 @@ class Parser implements SingletonInterface
     /**
      * @var
      */
-    protected $objHtmlPage;
-
-    /**
-     * @var
-     */
-    protected $countNewsOnPage;
+    protected $count;
 
     /**
      * Фабрика для обработки источника импорта
@@ -43,11 +38,6 @@ class Parser implements SingletonInterface
      * @var SourceFactory
      */
     protected $sourceClass;
-
-    /**
-     *
-     */
-    protected $arNewsList;
 
     /**
      * @return self
@@ -131,90 +121,106 @@ class Parser implements SingletonInterface
      *
      * @throws \Exception
      */
-    public function getCountNewsOnPage($pattern)
+    public function countList($pattern)
     {
         if($pattern)
         {
-            $this->objHtmlPage = \phpQuery::newDocument($this->htmlPage);
+            $objHtmlPage = \phpQuery::newDocument($this->htmlPage);
 
-            if(is_object($this->objHtmlPage))
+            if(is_object($objHtmlPage))
             {
-                $this->countNewsOnPage = sizeof($this->objHtmlPage->find($pattern));
+                $this->count = sizeof($objHtmlPage->find($pattern));
 
-                if($this->countNewsOnPage)
+                if($this->count)
                 {
-                    return $this->countNewsOnPage;
+                    return $this->count;
                 }
                 else
                 {
-                    throw new \Exception('На странице по паттерну новостей не найденно');
+                    return false;
                 }
             }
             else
             {
-                throw new \Exception('Не удалось получить объект документа');
+                return false;
             }
         }
         return false;
     }
 
     /**
-     * Упаковка html в объект
      *
-     * @param $html
-     * @param $pattern
+     * Упаковка html в массив объектов
      *
-     * @return bool
+     * @param $count
+     * @param $patternDate
+     * @param $patternDetailPageUrl
+     * @param $patternPreviewText
+     *
+     * @return bool|mixed
      */
-    public function htmlToArray($html, $pattern)
+    public function htmlToArray($count, $patternDate, $patternDetailPageUrl, $patternPreviewText)
     {
-        $obj = \phpQuery::newDocument($html);
+        $arResult = array();
+        $arItems  = array();
 
-        $ar = array();
-        foreach ($obj->find($pattern) as $item)
-            $ar[] = $item;
+        $objHtmlPage = \phpQuery::newDocument($this->htmlPage);
 
-        if(sizeof($ar))
-            return $ar;
-
-        return false;
-    }
-
-    /**
-     * Получить html с список новостей
-     *
-     * @param $pattern
-     *
-     * @return bool
-     */
-    public function getHtmlNewsList($pattern, $count)
-    {
-        if($pattern)
+        foreach ($objHtmlPage->find($patternDate) as $date)
         {
-            $htmlNewsList = $this->objHtmlPage->find($pattern);
+            $arItems['DATE'][] = trim(pq($date)->text());
+        }
 
-            $arNewsList = $this->getArNewsList($htmlNewsList, $pattern);
+        foreach ($objHtmlPage->find($patternDetailPageUrl) as $detailPageUrl)
+        {
+            $arItems['DETAIL_PAGE_URL'][] = trim(pq($detailPageUrl)->attr('href'));
+        }
 
+        foreach ($objHtmlPage->find($patternPreviewText) as $previewText)
+        {
+            $arItems['PREVIEW_TEXT'][] = trim(pq($previewText)->html());
+        }
 
+        if(sizeof($arItems['DATE']) > 0)
+        {
+            foreach ($arItems['DATE'] as $key => $value)
+            {
+                $arResult['ITEMS'][] = array(
+                    'DATE'              => $value,
+                    'DETAIL_PAGE_URL'   => $arItems['DETAIL_PAGE_URL'][$key],
+                    'PREVIEW_TEXT'      => $arItems['PREVIEW_TEXT'][$key],
+                    'DETAIL_TEXT'       => '',
+                    'PREVIEW_PICTURE'   => array(),
+                    'DETAIL_PICTURE'    => array(),
+                );
+            }
+        }
 
-            $fl = new FileLogger('parser.txt');
-            $fl->log($arNewsList);
-
-            $arTableNewList[] = trim(pq($this->objHtmlPage->find($pattern))->text());
-
+        if(sizeof($arResult['ITEMS']))
+        {
+            return $arResult['ITEMS'];
         }
         return false;
     }
 
+    private function arrayShiftObjects()
+    {
+        return array_shift($this->arObj);
+    }
+
     /**
      * @param $pattern
-     * @param $count
      */
-    public function getNewsDate($htmlNewsList, $pattern)
+    public function getTextDate($pattern)
     {
         if($pattern)
         {
-            $arDate = trim(pq($this->objHtmlPage->find($pattern))->text());
+            $obj = $this->arrayShiftObjects();
+
+            $htmlObj = \phpQuery::newDocument($obj->textContent);
+
+
+            $date = trim(pq($htmlObj->find($pattern))->text());
         }
         return false;
     }
