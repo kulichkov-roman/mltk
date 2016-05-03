@@ -29,11 +29,11 @@ $arParams = array(
     'REFERER' => 'http://www.bigpowernews.ru/',
 );
 
-$htmlPage = $source->getPageCurl($arParams);
+$htmlPage = $source->getPage($arParams);
 
 if($htmlPage)
 {
-    $count = $source->countList('table.sres');
+    $count = $source->count('table.sres');
 
     if($count > 0)
     {
@@ -49,7 +49,7 @@ if($htmlPage)
             sizeof($arResult)
         )
         {
-            $arFirst = array_shift($arResult);
+            $arFirst = array_shift($arResult['ITEMS']);
 
             echo "<pre>"; var_dump($arFirst); echo "</pre>";
 

@@ -85,7 +85,7 @@ class Parser implements SingletonInterface
      * @return bool
      * @throws \Exception
      */
-    public function getPageCurl($arParams)
+    public function getPage($arParams)
     {
         if($arParams['URL'])
         {
@@ -121,7 +121,7 @@ class Parser implements SingletonInterface
      *
      * @throws \Exception
      */
-    public function countList($pattern)
+    public function count($pattern)
     {
         if($pattern)
         {
@@ -201,11 +201,6 @@ class Parser implements SingletonInterface
             return $arResult['ITEMS'];
         }
         return false;
-    }
-
-    private function arrayShiftObjects()
-    {
-        return array_shift($this->arObj);
     }
 
     /**
