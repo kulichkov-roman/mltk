@@ -46,7 +46,7 @@ class FileLogger implements LoggerInterface
 	{
 		file_put_contents(
 			$this->fileName,
-			sprintf('%s %s' . PHP_EOL, date('Y-m-d H:i:s'), $message),
+			sprintf('%s %s' . PHP_EOL, date('Y-m-d H:i:s'), var_export($message, true)),
 			FILE_APPEND
 		);
 	}
