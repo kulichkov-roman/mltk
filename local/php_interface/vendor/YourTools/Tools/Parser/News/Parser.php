@@ -16,6 +16,7 @@ use Your\Tools\Logger\FileLogger;
 class Parser implements SingletonInterface
 {
     const USER_AGENT = 'Opera/10.00 (Windows NT 5.1; U; ru) Presto/2.2.0';
+    const FORMAT_DATE = 'DD.MM.YYYY';
 
     /**
      * @var self
@@ -152,14 +153,13 @@ class Parser implements SingletonInterface
      *
      * Упаковка html в массив объектов
      *
-     * @param $count
      * @param $patternDate
      * @param $patternDetailPageUrl
      * @param $patternPreviewText
      *
      * @return bool|mixed
      */
-    public function htmlToArray($count, $patternDate, $patternDetailPageUrl, $patternPreviewText)
+    public function htmlToArray($patternDate, $patternDetailPageUrl, $patternPreviewText)
     {
         $arResult = array();
         $arItems  = array();
@@ -204,18 +204,82 @@ class Parser implements SingletonInterface
     }
 
     /**
+     * Конвертирование даты
+     *
+     * @param $date
+     *
+     * @return bool
+     */
+    public function convertDate($strDate)
+    {
+        $arMonth = array(
+            'января',
+            'февраля',
+            'марта',
+            'апреля',
+            'мая',
+            'июня',
+            'июля',
+            'августа',
+            'сентября',
+            'октября',
+            'ноября',
+            'декабря',
+        );
+
+        if(mb_stripos($strDate, ',') !== false)
+        {
+            $strDate = mb_stristr($strDate, ', ', true);
+            $arDate = ParseDateTime($strDate, self::FORMAT_DATE);
+            $arDate['MM'] = intval(array_search($arDate['MM'], $arMonth)) + 1;
+            $strDate = implode('.', $arDate);
+
+            return $strDate;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    /**
+     * Сравнение дат в UNIX формате
+     *
+     * @param $date1
+     * @param $date2
+     *
+     * @return int
+     */
+    public function compareDate($date1, $date2)
+    {
+        if($date1 > $date2)
+        {
+            return 1;
+        }
+        elseif($date1 == $date2)
+        {
+            return 0;
+        }
+        // $date1 < $date2
+        else
+        {
+            return -1;
+        }
+    }
+
+    /**
      * @param $pattern
      */
     public function getTextDate($pattern)
     {
         if($pattern)
         {
-            $obj = $this->arrayShiftObjects();
-
-            $htmlObj = \phpQuery::newDocument($obj->textContent);
 
 
-            $date = trim(pq($htmlObj->find($pattern))->text());
+            //$htmlObj = \phpQuery::newDocument($obj->textContent);
+
+
+            //$date = trim(pq($htmlObj->find($pattern))->text());
         }
         return false;
     }

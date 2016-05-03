@@ -37,23 +37,46 @@ if($htmlPage)
 
     if($count > 0)
     {
-        $arResult = $source->htmlToArray(
-            $count,
-            'table.sres td.text_81',
-            'table.sres td.pad_65 a',
-            'table.sres div.text_82'
+        $arResult = array(
+            'ITEMS' => $source->htmlToArray(
+                'table.sres td.text_81',
+                'table.sres td.pad_65 a',
+                'table.sres div.text_82'
+            )
         );
 
-        if(
-            is_array($arResult) &&
-            sizeof($arResult)
-        )
+        if(sizeof($arResult['ITEMS']))
         {
-            $arFirst = array_shift($arResult['ITEMS']);
+            $arFirstItem = array_shift($arResult['ITEMS']);
+            $arFirstItem['DATE'] = MakeTimeStamp(
+                $source->convertDate($arFirstItem['DATE']),
+                $source::FORMAT_DATE
+            );
+            $curDate = MakeTimeStamp(
+                date('d.m.Y'),
+                $source::FORMAT_DATE
+            );
+            $rsCompareDate = $source->compareDate(
+                $arFirstItem['DATE'],
+                $curDate
+            );
 
-            echo "<pre>"; var_dump($arFirst); echo "</pre>";
-
-            $date = $source->getTextDate('table.sres tbody tr td.text_81');
+            if($rsCompareDate < 0)
+            {
+                throw new \Exception('Нет новостей за сегодняшне число');
+            }
+            elseif($rsCompareDate == 0)
+            {
+                /**
+                 * Получить и сохранить одну новость
+                 */
+            }
+            else
+            {
+                /**
+                 * Получить и сохранить все новости за текущую дату
+                 */
+            }
         }
         else
         {
