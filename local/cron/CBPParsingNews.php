@@ -33,13 +33,31 @@ $htmlPage = $source->getPageCurl($arParams);
 
 if($htmlPage)
 {
-    $count = $source->getCountNewsOnPage('table.sres');
+    $count = $source->countList('table.sres');
 
     if($count > 0)
     {
-        if($source->getHtmlNewsList('table.sres', $count))
-        {
+        $arResult = $source->htmlToArray(
+            $count,
+            'table.sres td.text_81',
+            'table.sres td.pad_65 a',
+            'table.sres div.text_82'
+        );
 
+        if(
+            is_array($arResult) &&
+            sizeof($arResult)
+        )
+        {
+            $arFirst = array_shift($arResult);
+
+            echo "<pre>"; var_dump($arFirst); echo "</pre>";
+
+            $date = $source->getTextDate('table.sres tbody tr td.text_81');
+        }
+        else
+        {
+            throw new \Exception('Не удалось собрать результирующий массив');
         }
     }
     else
