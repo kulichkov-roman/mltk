@@ -81,18 +81,17 @@ class Parser implements SingletonInterface
     }
 
     /**
-     * @param $arParams
+     * @param $url
      *
      * @return bool
-     * @throws \Exception
      */
-    public function getPage($arParams)
+    public function getPage($url)
     {
-        if($arParams['URL'])
+        if($url)
         {
             $curl = curl_init();
 
-            curl_setopt($curl, CURLOPT_URL, $arParams['URL']);
+            curl_setopt($curl, CURLOPT_URL, $url);
             curl_setopt($curl, CURLOPT_USERAGENT, self::USER_AGENT);
             curl_setopt($curl, CURLOPT_FAILONERROR, 1);
             curl_setopt($curl, CURLOPT_TIMEOUT, 30);
@@ -113,7 +112,7 @@ class Parser implements SingletonInterface
         }
         else
         {
-            throw new \Exception('Не задан параметр URL страницы');
+            return false;
         }
     }
 
@@ -150,8 +149,65 @@ class Parser implements SingletonInterface
     }
 
     /**
+     * @param $urlSite
+     * @param $urlDetail
+     * @param $patternDetail
+     * @param $patternDetailImages
      *
-     * Упаковка html в массив объектов
+     * @return array|bool
+     */
+    public function getElementDetail(
+        $urlSite,
+        $urlDetail,
+        $patternDetail,
+        $patternDetailImages = null
+    )
+    {
+        if(
+            $urlSite &&
+            $urlDetail &&
+            $patternDetail
+        )
+        {
+            $urlPage = $urlSite.$urlDetail;
+
+            $arDetail = array();
+
+            if($urlPage)
+            {
+                if($this->getPage($urlPage))
+                {
+                    $objHtmlDetailPage = \phpQuery::newDocument($this->htmlPage);
+
+                    $detailText = $objHtmlDetailPage->find($patternDetail);
+                    $arDetail['DETAIL_TEXT'] = trim(pq($detailText)->html());
+
+                    if($patternDetailImages)
+                    {
+                        $arDetail['DETAIL_PICTURE'] = '';
+                    }
+
+                    return $arDetail;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    /**
+     *
+     * Упаковка html в массив объектов для списка
      *
      * @param $patternDate
      * @param $patternDetailPageUrl
@@ -159,7 +215,11 @@ class Parser implements SingletonInterface
      *
      * @return bool|mixed
      */
-    public function htmlToArray($patternDate, $patternDetailPageUrl, $patternPreviewText)
+    public function getElementList(
+        $patternDate,
+        $patternDetailPageUrl,
+        $patternPreviewText
+    )
     {
         $arResult = array();
         $arItems  = array();
@@ -174,6 +234,7 @@ class Parser implements SingletonInterface
         foreach ($objHtmlPage->find($patternDetailPageUrl) as $detailPageUrl)
         {
             $arItems['DETAIL_PAGE_URL'][] = trim(pq($detailPageUrl)->attr('href'));
+            $arItems['NAME'][] = trim(pq($detailPageUrl)->text());
         }
 
         foreach ($objHtmlPage->find($patternPreviewText) as $previewText)
@@ -187,6 +248,7 @@ class Parser implements SingletonInterface
             {
                 $arResult['ITEMS'][] = array(
                     'DATE'              => $value,
+                    'NAME'              => $arItems['NAME'][$key],
                     'DETAIL_PAGE_URL'   => $arItems['DETAIL_PAGE_URL'][$key],
                     'PREVIEW_TEXT'      => $arItems['PREVIEW_TEXT'][$key],
                     'DETAIL_TEXT'       => '',
@@ -265,23 +327,6 @@ class Parser implements SingletonInterface
         {
             return -1;
         }
-    }
-
-    /**
-     * @param $pattern
-     */
-    public function getTextDate($pattern)
-    {
-        if($pattern)
-        {
-
-
-            //$htmlObj = \phpQuery::newDocument($obj->textContent);
-
-
-            //$date = trim(pq($htmlObj->find($pattern))->text());
-        }
-        return false;
     }
 }
 ?>

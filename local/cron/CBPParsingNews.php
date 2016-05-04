@@ -22,75 +22,87 @@ if (!\CModule::IncludeModule('iblock'))
     die('Unable to include "iblock" module');
 }
 
-$source = \Your\Tools\Parser\News\Parser::getInstance();
-
-$arParams = array(
-    'URL' => 'http://www.bigpowernews.ru/search/?reff_id=&smode=razdel&source=ALL&source2=BP&source3=BP&source4=BP&region=2405&rubrika_bpd=&theme=22420&theme_doc=9740&rubrika=2920&razdel=35&q=&select_enabled_from=&select_year_from=2016&select_month_from=4&select_day_from=22&type=&select_enabled_to=&select_year_to=2016&select_month_to=4&select_day_to=22&type=&page=&sortby=&perpage=&outtype=',
-    'REFERER' => 'http://www.bigpowernews.ru/',
-);
-
-$htmlPage = $source->getPage($arParams);
-
-if($htmlPage)
+class CBParsingNews
 {
-    $count = $source->count('table.sres');
+    protected $urlFilter;
+    protected $urlSite;
 
-    if($count > 0)
+    private $source;
+
+    public function __construct()
     {
-        $arResult = array(
-            'ITEMS' => $source->htmlToArray(
-                'table.sres td.text_81',
-                'table.sres td.pad_65 a',
-                'table.sres div.text_82'
-            )
-        );
+        $this->source = \Your\Tools\Parser\News\Parser::getInstance();
 
-        if(sizeof($arResult['ITEMS']))
+        $this->urlFilter = 'http://www.bigpowernews.ru/search/?reff_id=&smode=razdel&source=ALL&source2=BP&source3=BP&source4=BP&region=2405&rubrika_bpd=&theme=22420&theme_doc=9740&rubrika=2920&razdel=35&q=&select_enabled_from=&select_year_from=2016&select_month_from=4&select_day_from=22&type=&select_enabled_to=&select_year_to=2016&select_month_to=4&select_day_to=22&type=&page=&sortby=&perpage=&outtype=';
+        $this->urlSite = 'www.bigpowernews.ru';
+    }
+
+    /**
+     * Применить парсинг
+     */
+    public function up()
+    {
+        $htmlPage = $this->source->getPage($this->urlFilter);
+
+        if($htmlPage)
         {
-            $arFirstItem = array_shift($arResult['ITEMS']);
-            $arFirstItem['DATE'] = MakeTimeStamp(
-                $source->convertDate($arFirstItem['DATE']),
-                $source::FORMAT_DATE
-            );
-            $curDate = MakeTimeStamp(
-                date('d.m.Y'),
-                $source::FORMAT_DATE
-            );
-            $rsCompareDate = $source->compareDate(
-                $arFirstItem['DATE'],
-                $curDate
-            );
+            $count = $this->source->count('table.sres');
+            if($count > 0)
+            {
+                $arResult = array(
+                    'ITEMS' => $this->source->getElementList(
+                        'table.sres td.text_81',
+                        'table.sres td.pad_65 a',
+                        'table.sres div.text_82'
+                    )
+                );
 
-            if($rsCompareDate < 0)
-            {
-                throw new \Exception('Нет новостей за сегодняшне число');
-            }
-            elseif($rsCompareDate == 0)
-            {
-                /**
-                 * Получить и сохранить одну новость
-                 */
-            }
-            else
-            {
-                /**
-                 * Получить и сохранить все новости за текущую дату
-                 */
+                if(sizeof($arResult['ITEMS']))
+                {
+                    $arFirstItem = array_shift($arResult['ITEMS']);
+                    $arFirstItem['DATE'] = MakeTimeStamp(
+                        $this->source->convertDate($arFirstItem['DATE']),
+                        $this->source->FORMAT_DATE
+                    );
+                    $curDate = MakeTimeStamp(
+                        date('d.m.Y'),
+                        $this->source->FORMAT_DATE
+                    );
+                    $rsCompareDate = $this->source->compareDate(
+                        $arFirstItem['DATE'],
+                        $curDate
+                    );
+
+                    $rsCompareDate = 0;
+                    if($rsCompareDate < 0)
+                    {
+                        throw new \Exception('Нет новостей за сегодняшне число');
+                    }
+                    elseif($rsCompareDate == 0)
+                    {
+                        foreach($arResult['ITEMS'] as &$arItem)
+                        {
+                            $arDetailPage = $this->source->getElementDetail(
+                                $this->urlSite,
+                                $arItem['DETAIL_PAGE_URL'],
+                                'div.block_233'
+                            );
+                            $arItem['DETAIL_TEXT'] = $arDetailPage['DETAIL_TEXT'];
+                        }
+                        unset($arItem);
+                    }
+                    else
+                    {
+                        /**
+                         * Получить и сохранить все новости за текущую дату
+                         */
+                    }
+                }
             }
         }
-        else
-        {
-            throw new \Exception('Не удалось собрать результирующий массив');
-        }
     }
-    else
-    {
-        throw new \Exception('Количество новостей ноль');
-    }
-}
-else
-{
-    throw new \Exception('Полученная страница пуста');
 }
 
+$parser = new CBParsingNews();
+$parser->up();
 ?>
