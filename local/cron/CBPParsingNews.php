@@ -85,7 +85,7 @@ class CBParsingNews implements ParsingInterface
                         $arItem['DETAIL_TEXT'] = $arDetailPage['DETAIL_TEXT'];
 
                         $arTranslitParams = array(
-                            'max_len' => 50,
+                            'max_len' => 100,
                             'replace_space' => '_',
                             'replace_other' => '_'
                         );
@@ -94,8 +94,6 @@ class CBParsingNews implements ParsingInterface
                             $arItem['NAME'],
                             $arTranslitParams
                         );
-
-                        echo "<pre>"; var_dump($code); echo "</pre>"; die();
 
                         $arElement = array(
                             'SITE_ID'          => 's1',
