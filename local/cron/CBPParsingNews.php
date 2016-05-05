@@ -85,19 +85,15 @@ class CBParsingNews implements ParsingInterface
                         $arItem['DETAIL_TEXT'] = $arDetailPage['DETAIL_TEXT'];
 
                         $arTranslitParams = array(
-                            'max_len' => 10,
+                            'max_len' => 50,
                             'replace_space' => '_',
+                            'replace_other' => '_'
                         );
 
-                        $str = 'олололОлОлололо';
-
-                        $code = $this->source->translit(
-                            $str,
-                            "ru" ,
+                        $code = $this->source->getTranslitElementCode(
+                            $arItem['NAME'],
                             $arTranslitParams
                         );
-
-                        $code = $this->source->str2url($arItem['NAME']);
 
                         echo "<pre>"; var_dump($code); echo "</pre>"; die();
 

@@ -309,8 +309,32 @@ class Parser implements SingletonInterface
         }
     }
 
-    public function rus2translit($string) {
-        $converter = array(
+    /**
+     * Обрезать текст
+     *
+     * @param $str
+     * @param $intLen
+     *
+     * @return string
+     */
+    function getTruncateStr($str, $intLen)
+    {
+        if(strlen($str) > $intLen)
+            return rtrim(substr($str, 0, $intLen));
+        else
+            return $str;
+    }
+
+    /**
+     * Транслитирация русских символов
+     *
+     * @param $str
+     *
+     * @return mixed
+     */
+    public function getTranslitStr($str)
+    {
+        $arConverter = array(
             'а' => 'a',   'б' => 'b',   'в' => 'v',
             'г' => 'g',   'д' => 'd',   'е' => 'e',
             'ё' => 'e',   'ж' => 'zh',  'з' => 'z',
@@ -335,39 +359,24 @@ class Parser implements SingletonInterface
             'Ь' => '\'',  'Ы' => 'Y',   'Ъ' => '\'',
             'Э' => 'E',   'Ю' => 'Yu',  'Я' => 'Ya',
         );
-        return strtr($string, $converter);
-    }
-
-    public function  str2url($str) {
-        $str = $this->rus2translit($str);
-        $str = strtolower($str);
-        $str = preg_replace('~[^-a-z0-9_]+~u', '_', $str);
-        $str = trim($str, "_");
-        return $str;
+        return strtr($str, $arConverter);
     }
 
     /**
-     * Сравнение дат в UNIX формате
+     * Получить символьный код элемента
      *
-     * @param $date1
-     * @param $date2
+     * @param $str
      *
-     * @return int
+     * @return mixed
      */
-    public function compareDate($date1, $date2)
+    public function getTranslitElementCode($str, $arParams)
     {
-        if($date1 < $date2)
-        {
-            return 1;
-        }
-        elseif($date1 == $date2)
-        {
-            return 0;
-        }
-        else
-        {
-            return -1;
-        }
+        $str = $this->getTruncateStr($str, $arParams['max_len']);
+        $str = $this->getTranslitStr($str);
+        $str = strtolower($str);
+        $str = preg_replace('~[^-a-z0-9_]+~u', $arParams['replace_space'], $str);
+        $str = trim($str, $arParams['replace_other']);
+        return $str;
     }
 }
 ?>
