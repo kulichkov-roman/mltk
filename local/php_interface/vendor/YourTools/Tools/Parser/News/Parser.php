@@ -15,8 +15,9 @@ use Your\Tools\Logger\FileLogger;
  */
 class Parser implements SingletonInterface
 {
-    const USER_AGENT = 'Opera/10.00 (Windows NT 5.1; U; ru) Presto/2.2.0';
-    const FORMAT_DATE = 'DD.MM.YYYY';
+    const USER_AGENT    = 'Opera/10.00 (Windows NT 5.1; U; ru) Presto/2.2.0';
+    const FORMAT_DATE   = 'DD.MM.YYYY';
+    const FORMAT_DATE_1 = 'd.m.Y';
 
     /**
      * @var self
@@ -206,7 +207,6 @@ class Parser implements SingletonInterface
     }
 
     /**
-     *
      * Упаковка html в массив объектов для списка
      *
      * @param $patternDate
@@ -228,7 +228,7 @@ class Parser implements SingletonInterface
 
         foreach ($objHtmlPage->find($patternDate) as $date)
         {
-            $arItems['DATE'][] = trim(pq($date)->text());
+            $arItems['DATE'][] = $this->convertDate(trim(pq($date)->text()));
         }
 
         foreach ($objHtmlPage->find($patternDetailPageUrl) as $detailPageUrl)
@@ -246,15 +246,19 @@ class Parser implements SingletonInterface
         {
             foreach ($arItems['DATE'] as $key => $value)
             {
-                $arResult['ITEMS'][] = array(
-                    'DATE'              => $value,
-                    'NAME'              => $arItems['NAME'][$key],
-                    'DETAIL_PAGE_URL'   => $arItems['DETAIL_PAGE_URL'][$key],
-                    'PREVIEW_TEXT'      => $arItems['PREVIEW_TEXT'][$key],
-                    'DETAIL_TEXT'       => '',
-                    'PREVIEW_PICTURE'   => array(),
-                    'DETAIL_PICTURE'    => array(),
-                );
+                //if($arItems['DATE'] == date(self::FORMAT_DATE_1))
+                if($value == '04.05.2016')
+                {
+                    $arResult['ITEMS'][] = array(
+                        'DATE'              => $value,
+                        'NAME'              => $arItems['NAME'][$key],
+                        'DETAIL_PAGE_URL'   => $arItems['DETAIL_PAGE_URL'][$key],
+                        'PREVIEW_TEXT'      => $arItems['PREVIEW_TEXT'][$key],
+                        'DETAIL_TEXT'       => '',
+                        'PREVIEW_PICTURE'   => array(),
+                        'DETAIL_PICTURE'    => array(),
+                    );
+                }
             }
         }
 
@@ -292,8 +296,9 @@ class Parser implements SingletonInterface
         if(mb_stripos($strDate, ',') !== false)
         {
             $strDate = mb_stristr($strDate, ', ', true);
-            $arDate = ParseDateTime($strDate, self::FORMAT_DATE);
-            $arDate['MM'] = intval(array_search($arDate['MM'], $arMonth)) + 1;
+            $arDate  = ParseDateTime($strDate, self::FORMAT_DATE);
+            $num     = intval(array_search($arDate['MM'], $arMonth)) + 1;
+            $arDate['MM'] = str_pad($num, 2, '0', STR_PAD_LEFT);
             $strDate = implode('.', $arDate);
 
             return $strDate;
@@ -302,6 +307,43 @@ class Parser implements SingletonInterface
         {
             return false;
         }
+    }
+
+    public function rus2translit($string) {
+        $converter = array(
+            'а' => 'a',   'б' => 'b',   'в' => 'v',
+            'г' => 'g',   'д' => 'd',   'е' => 'e',
+            'ё' => 'e',   'ж' => 'zh',  'з' => 'z',
+            'и' => 'i',   'й' => 'y',   'к' => 'k',
+            'л' => 'l',   'м' => 'm',   'н' => 'n',
+            'о' => 'o',   'п' => 'p',   'р' => 'r',
+            'с' => 's',   'т' => 't',   'у' => 'u',
+            'ф' => 'f',   'х' => 'h',   'ц' => 'c',
+            'ч' => 'ch',  'ш' => 'sh',  'щ' => 'sch',
+            'ь' => '\'',  'ы' => 'y',   'ъ' => '\'',
+            'э' => 'e',   'ю' => 'yu',  'я' => 'ya',
+
+            'А' => 'A',   'Б' => 'B',   'В' => 'V',
+            'Г' => 'G',   'Д' => 'D',   'Е' => 'E',
+            'Ё' => 'E',   'Ж' => 'Zh',  'З' => 'Z',
+            'И' => 'I',   'Й' => 'Y',   'К' => 'K',
+            'Л' => 'L',   'М' => 'M',   'Н' => 'N',
+            'О' => 'O',   'П' => 'P',   'Р' => 'R',
+            'С' => 'S',   'Т' => 'T',   'У' => 'U',
+            'Ф' => 'F',   'Х' => 'H',   'Ц' => 'C',
+            'Ч' => 'Ch',  'Ш' => 'Sh',  'Щ' => 'Sch',
+            'Ь' => '\'',  'Ы' => 'Y',   'Ъ' => '\'',
+            'Э' => 'E',   'Ю' => 'Yu',  'Я' => 'Ya',
+        );
+        return strtr($string, $converter);
+    }
+
+    public function  str2url($str) {
+        $str = $this->rus2translit($str);
+        $str = strtolower($str);
+        $str = preg_replace('~[^-a-z0-9_]+~u', '_', $str);
+        $str = trim($str, "_");
+        return $str;
     }
 
     /**
@@ -314,7 +356,7 @@ class Parser implements SingletonInterface
      */
     public function compareDate($date1, $date2)
     {
-        if($date1 > $date2)
+        if($date1 < $date2)
         {
             return 1;
         }
@@ -322,7 +364,6 @@ class Parser implements SingletonInterface
         {
             return 0;
         }
-        // $date1 < $date2
         else
         {
             return -1;

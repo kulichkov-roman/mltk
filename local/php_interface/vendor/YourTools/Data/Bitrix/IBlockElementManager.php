@@ -151,19 +151,22 @@ final class IBlockElementManager implements ObjectManagerInterface, SingletonInt
 	 * @param array $fields
 	 * @param array $properties
 	 *
-	 * @return int|null
+	 * @return int|string
 	 */
 	public function add(array $fields, array $properties = array())
 	{
-		if ($id = $this->iBEGateway->Add($fields)) {
-			if (!empty($properties)) {
+		if ($id = $this->iBEGateway->Add($fields))
+		{
+			if (!empty($properties))
+			{
 				\CIBlockElement::SetPropertyValuesEx($id, $fields['IBLOCK_ID'], $properties);
 			}
-
 			return $id;
 		}
-
-		return null;
+		else
+		{
+			return $this->iBEGateway->LAST_ERROR;
+		}
 	}
 
 	/**
