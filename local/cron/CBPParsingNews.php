@@ -26,6 +26,9 @@ if (!\CModule::IncludeModule('iblock'))
 
 class CBParsingNews implements ParsingInterface
 {
+    const TEXT_TYPE = 'html';
+    const SITE_ID   = 's1';
+
     protected $urlFilter;
     protected $urlSite;
     protected $iBlockId;
@@ -96,14 +99,16 @@ class CBParsingNews implements ParsingInterface
                         );
 
                         $arElement = array(
-                            'SITE_ID'          => 's1',
+                            'SITE_ID'          => self::SITE_ID,
                             'CODE'             => $code,
                             'IBLOCK_ID'        => $this->iBlockId,
                             'DATE_ACTIVE_FROM' => $arItem['DATE'],
                             'NAME'             => $arItem['NAME'],
                             'DETAIL_PAGE_URL'  => $arItem['DETAIL_PAGE_URL'],
                             'PREVIEW_TEXT'     => $arItem['PREVIEW_TEXT'],
-                            'DETAIL_TEXT'      => $arItem['DETAIL_TEXT']
+                            'PREVIEW_TEXT_TYPE'=> self::TEXT_TYPE,
+                            'DETAIL_TEXT'      => $arItem['DETAIL_TEXT'],
+                            'DETAIL_TEXT_TYPE' => self::TEXT_TYPE
                         );
 
                         if ($id = $manager->add($arElement))
