@@ -24,7 +24,7 @@ if (!\CModule::IncludeModule('iblock'))
     die('Unable to include "iblock" module');
 }
 
-class CBParsingNews implements ParsingInterface
+class CRGParsingNews implements ParsingInterface
 {
     const TEXT_TYPE = 'html';
     const SITE_ID   = 's1';
@@ -42,11 +42,11 @@ class CBParsingNews implements ParsingInterface
     public function __construct()
     {
         $this->source = \Your\Tools\Parser\News\Parser::getInstance();
-        $this->logger = new \Your\Tools\Logger\FileLogger('parserCB.log');
+        $this->logger = new \Your\Tools\Logger\FileLogger('parserRG.log');
         $this->iBlockId = \Your\Environment\EnvironmentManager::getInstance()->get('newsIBlockId');
 
-        $this->urlFilter = 'http://www.bigpowernews.ru/search/?reff_id=&smode=razdel&source=ALL&source2=BP&source3=BP&source4=BP&region=2405&rubrika_bpd=&theme=22420&theme_doc=9740&rubrika=2920&razdel=35&q=&select_enabled_from=&select_year_from=2016&select_month_from=4&select_day_from=22&type=&select_enabled_to=&select_year_to=2016&select_month_to=4&select_day_to=22&type=&page=&sortby=&perpage=&outtype=';
-        $this->urlSite = 'www.bigpowernews.ru';
+        $this->urlFilter = 'http://rg.ru/tema/ekonomika/industria/energo/';
+        $this->urlSite = 'www.rg.ru';
     }
 
     /**
@@ -60,16 +60,16 @@ class CBParsingNews implements ParsingInterface
 
         if($htmlPage)
         {
-            $countSumList = $this->source->count('table.sres');
+            $countSumList = $this->source->count('div.b-news-inner__list-item');
             if($countSumList > 0)
             {
                 $this->logger->log(sprintf('Новостей на странице: %s', $countSumList));
 
                 $arResult = array(
                     'ITEMS' => $this->source->getElementList(
-                        'table.sres td.text_81',
-                        'table.sres td.pad_65 a',
-                        'table.sres div.text_82'
+                        'div.b-news-inner__list-item div.b-news-inner__list-item-date._date',
+                        'div.b-news-inner__list-item h2.b-news-inner__list-item-title a',
+                        'div.b-news-inner__list-item p.b-news-inner__list-item-text a'
                     )
                 );
 
@@ -78,12 +78,23 @@ class CBParsingNews implements ParsingInterface
                 {
                     $this->logger->log(sprintf('Новостей за сегодня: %s', $countCurDate));
 
+                    $patternDetailImages = '';
+
+                    $arPatternsException = array(
+                        'div.ga-element.b-read-more.b-read-more_230x200.b-read-more_left',
+                        'div.ga-element.b-read-more.b-read-more_230x200.b-read-more_right',
+                        'div.b-read-more.b-read-more_50x50.b-read-more_left',
+                        'div.b-material-img.b-material-img_art'
+                    );
+
                     foreach($arResult['ITEMS'] as &$arItem)
                     {
                         $arDetailPage = $this->source->getElementDetail(
                             $this->urlSite,
                             $arItem['DETAIL_PAGE_URL'],
-                            'div.block_233'
+                            'article',
+                            $patternDetailImages,
+                            $arPatternsException
                         );
                         $arItem['DETAIL_TEXT'] = $arDetailPage['DETAIL_TEXT'];
 
@@ -104,7 +115,7 @@ class CBParsingNews implements ParsingInterface
                             'IBLOCK_ID'        => $this->iBlockId,
                             'DATE_ACTIVE_FROM' => $arItem['DATE'],
                             'NAME'             => $arItem['NAME'],
-                            'DETAIL_PAGE_URL'  => $arItem['DETAIL_PAGE_URL'],
+                            //'DETAIL_PAGE_URL'  => $arItem['DETAIL_PAGE_URL'],
                             'PREVIEW_TEXT'     => $arItem['PREVIEW_TEXT'],
                             'PREVIEW_TEXT_TYPE'=> self::TEXT_TYPE,
                             'DETAIL_TEXT'      => $arItem['DETAIL_TEXT'],
@@ -113,11 +124,11 @@ class CBParsingNews implements ParsingInterface
 
                         if ($id = $manager->add($arElement))
                         {
-                            $this->logger->log(sprintf('Новость добавленна: "%s" (%s) ', $arItem['NAME'], $id));
+                            $this->logger->log(sprintf('Новость добавлена: "%s" (%s) ', $arItem['NAME'], $id));
                         }
                         else
                         {
-                            $this->logger->log(sprintf('Новость не добавленна: "%s" ', $arItem['NAME']));
+                            $this->logger->log(sprintf('Новость не добавлена: "%s" ', $arItem['NAME']));
                         }
                     }
                     unset($arItem);
@@ -127,7 +138,7 @@ class CBParsingNews implements ParsingInterface
     }
 }
 
-$parser = new CBParsingNews();
+$parser = new CRGParsingNews();
 
 try
 {

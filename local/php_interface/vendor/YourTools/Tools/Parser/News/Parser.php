@@ -2,8 +2,12 @@
 namespace Your\Tools\Parser\News;
 
 use Your\Common\SingletonInterface;
+
+use Your\Exception\Data\Parsing\ParsingException;
+
 use Your\Tools\Parser\News\SourceFactory;
 use Your\Tools\Parser\News\SourceBP;
+
 use Your\Tools\Logger\FileLogger;
 
 /**
@@ -60,6 +64,7 @@ class Parser implements SingletonInterface
     protected function __construct($sourceClass)
     {
         $this->sourceClass = $sourceClass;
+        $this->logger = new \Your\Tools\Logger\FileLogger('parser.log');
     }
 
     private function __clone()
@@ -150,10 +155,21 @@ class Parser implements SingletonInterface
     }
 
     /**
+     * @param $html
+     *
+     * @return mixed
+     */
+    public function removeHtmlComments($html)
+    {
+        return preg_replace('/<!--(.*?)-->/', '', $html);
+    }
+
+    /**
      * @param $urlSite
      * @param $urlDetail
      * @param $patternDetail
      * @param $patternDetailImages
+     * @param $arExceptionPattern
      *
      * @return array|bool
      */
@@ -161,7 +177,8 @@ class Parser implements SingletonInterface
         $urlSite,
         $urlDetail,
         $patternDetail,
-        $patternDetailImages = null
+        $patternDetailImages = null,
+        $arPatternsException = array()
     )
     {
         if(
@@ -171,7 +188,6 @@ class Parser implements SingletonInterface
         )
         {
             $urlPage = $urlSite.$urlDetail;
-
             $arDetail = array();
 
             if($urlPage)
@@ -180,8 +196,21 @@ class Parser implements SingletonInterface
                 {
                     $objHtmlDetailPage = \phpQuery::newDocument($this->htmlPage);
 
-                    $detailText = $objHtmlDetailPage->find($patternDetail);
-                    $arDetail['DETAIL_TEXT'] = trim(pq($detailText)->html());
+                    if(
+                        is_array($arPatternsException) &&
+                        sizeof($arPatternsException)
+                    )
+                    {
+                        foreach ($arPatternsException as $arExceptionPattern)
+                        {
+                            $objHtmlDetailPage->find($arExceptionPattern)->remove();
+                        }
+                    }
+
+                    $detailObj = $objHtmlDetailPage->find($patternDetail);
+                    $arDetail['DETAIL_TEXT'] = $this->removeHtmlComments(
+                        trim(pq($detailObj)->html())
+                    );
 
                     if($patternDetailImages)
                     {
@@ -221,52 +250,70 @@ class Parser implements SingletonInterface
         $patternPreviewText
     )
     {
-        $arResult = array();
-        $arItems  = array();
-
-        $objHtmlPage = \phpQuery::newDocument($this->htmlPage);
-
-        foreach ($objHtmlPage->find($patternDate) as $date)
+        if(
+            $patternDate &&
+            $patternDetailPageUrl &&
+            $patternPreviewText
+        )
         {
-            $arItems['DATE'][] = $this->convertDate(trim(pq($date)->text()));
-        }
+            $arResult = array();
+            $arItems  = array();
 
-        foreach ($objHtmlPage->find($patternDetailPageUrl) as $detailPageUrl)
-        {
-            $arItems['DETAIL_PAGE_URL'][] = trim(pq($detailPageUrl)->attr('href'));
-            $arItems['NAME'][] = trim(pq($detailPageUrl)->text());
-        }
+            $objHtmlPage = \phpQuery::newDocument($this->htmlPage);
 
-        foreach ($objHtmlPage->find($patternPreviewText) as $previewText)
-        {
-            $arItems['PREVIEW_TEXT'][] = trim(pq($previewText)->html());
-        }
-
-        if(sizeof($arItems['DATE']) > 0)
-        {
-            foreach ($arItems['DATE'] as $key => $value)
+            foreach ($objHtmlPage->find($patternDate) as $date)
             {
-                //if($arItems['DATE'] == date(self::FORMAT_DATE_1))
-                if($value == '04.05.2016')
+                $arItems['DATE'][] = $this->convertDate(trim(pq($date)->html()));
+            }
+
+            if(sizeof($arItems['DATE']) > 0)
+            {
+                foreach ($objHtmlPage->find($patternDetailPageUrl) as $detailPageUrl)
                 {
-                    $arResult['ITEMS'][] = array(
-                        'DATE'              => $value,
-                        'NAME'              => $arItems['NAME'][$key],
-                        'DETAIL_PAGE_URL'   => $arItems['DETAIL_PAGE_URL'][$key],
-                        'PREVIEW_TEXT'      => $arItems['PREVIEW_TEXT'][$key],
-                        'DETAIL_TEXT'       => '',
-                        'PREVIEW_PICTURE'   => array(),
-                        'DETAIL_PICTURE'    => array(),
-                    );
+                    $arItems['DETAIL_PAGE_URL'][] = trim(pq($detailPageUrl)->attr('href'));
+                    $arItems['NAME'][] = trim(pq($detailPageUrl)->text());
+                }
+
+                foreach ($objHtmlPage->find($patternPreviewText) as $previewText)
+                {
+                    $arItems['PREVIEW_TEXT'][] = trim(pq($previewText)->html());
+                }
+
+                foreach ($arItems['DATE'] as $key => $value)
+                {
+                    //if($arItems['DATE'] == date(self::FORMAT_DATE_1))
+                    if($value == '28.04.2016')
+                    {
+                        $arResult['ITEMS'][] = array(
+                            'DATE'              => $value,
+                            'NAME'              => $arItems['NAME'][$key],
+                            'DETAIL_PAGE_URL'   => $arItems['DETAIL_PAGE_URL'][$key],
+                            'PREVIEW_TEXT'      => $arItems['PREVIEW_TEXT'][$key],
+                            'DETAIL_TEXT'       => '',
+                            'PREVIEW_PICTURE'   => array(),
+                            'DETAIL_PICTURE'    => array(),
+                        );
+                    }
+                }
+
+                if(sizeof($arResult['ITEMS']))
+                {
+                    return $arResult['ITEMS'];
+                }
+                else
+                {
+                    throw new \Exception('Список новостей пуст.');
                 }
             }
+            else
+            {
+                throw new \Exception('Не удалось получить список дат для списка новостей.');
+            }
         }
-
-        if(sizeof($arResult['ITEMS']))
+        else
         {
-            return $arResult['ITEMS'];
+            throw new \Exception('Не заполненны параметры для получения списка новостей.');
         }
-        return false;
     }
 
     /**
@@ -278,34 +325,41 @@ class Parser implements SingletonInterface
      */
     public function convertDate($strDate)
     {
-        $arMonth = array(
-            'января',
-            'февраля',
-            'марта',
-            'апреля',
-            'мая',
-            'июня',
-            'июля',
-            'августа',
-            'сентября',
-            'октября',
-            'ноября',
-            'декабря',
-        );
-
-        if(mb_stripos($strDate, ',') !== false)
+        if($strDate)
         {
-            $strDate = mb_stristr($strDate, ', ', true);
-            $arDate  = ParseDateTime($strDate, self::FORMAT_DATE);
-            $num     = intval(array_search($arDate['MM'], $arMonth)) + 1;
-            $arDate['MM'] = str_pad($num, 2, '0', STR_PAD_LEFT);
-            $strDate = implode('.', $arDate);
+            $arMonth = array(
+                'января',
+                'февраля',
+                'марта',
+                'апреля',
+                'мая',
+                'июня',
+                'июля',
+                'августа',
+                'сентября',
+                'октября',
+                'ноября',
+                'декабря',
+            );
 
-            return $strDate;
+            if(mb_stripos($strDate, ',') !== false)
+            {
+                $strDate = mb_stristr($strDate, ', ', true);
+                $arDate  = ParseDateTime($strDate, self::FORMAT_DATE);
+                $num     = intval(array_search($arDate['MM'], $arMonth)) + 1;
+                $arDate['MM'] = str_pad($num, 2, '0', STR_PAD_LEFT);
+                $strDate = implode('.', $arDate);
+
+                return $strDate;
+            }
+            else
+            {
+                return $strDate;
+            }
         }
         else
         {
-            return false;
+            throw new \Exception('Дата не может быть пустой.');
         }
     }
 
@@ -320,9 +374,17 @@ class Parser implements SingletonInterface
     function getTruncateStr($str, $intLen)
     {
         if(strlen($str) > $intLen)
-            return rtrim(substr($str, 0, $intLen));
-        else
+        {
+            $str = iconv('UTF-8','windows-1251', $str );
+            $str = substr($str, 0, $intLen);
+            $str = iconv('windows-1251','UTF-8', $str );
+
             return $str;
+        }
+        else
+        {
+            return $str;
+        }
     }
 
     /**
@@ -376,6 +438,7 @@ class Parser implements SingletonInterface
         $str = strtolower($str);
         $str = preg_replace('~[^-a-z0-9_]+~u', $arParams['replace_space'], $str);
         $str = trim($str, $arParams['replace_other']);
+
         return $str;
     }
 }
