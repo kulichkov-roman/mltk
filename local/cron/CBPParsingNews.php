@@ -28,6 +28,7 @@ class CBParsingNews implements ParsingInterface
 {
     const TEXT_TYPE = 'html';
     const SITE_ID   = 's1';
+    const FORMAT_DATE_1 = 'd.m.Y';
 
     protected $urlFilter;
     protected $urlSite;
@@ -56,7 +57,7 @@ class CBParsingNews implements ParsingInterface
     {
         $manager = \Your\Data\Bitrix\IBlockElementManager::getInstance();
 
-        $htmlPage = $this->source->getPage($this->urlFilter);
+        $htmlPage = $this->source->getPageByUrl($this->urlFilter);
 
         if($htmlPage)
         {
@@ -73,7 +74,7 @@ class CBParsingNews implements ParsingInterface
                     )
                 );
 
-                $countCurDate = sizeof($arResult['ITEMS']);
+                $countCurDate = is_array($arResult['ITEMS']) && sizeof($arResult['ITEMS']);
                 if($countCurDate)
                 {
                     $this->logger->log(sprintf('Новостей за сегодня: %s', $countCurDate));
@@ -85,7 +86,14 @@ class CBParsingNews implements ParsingInterface
                             $arItem['DETAIL_PAGE_URL'],
                             'div.block_233'
                         );
-                        $arItem['DETAIL_TEXT'] = $arDetailPage['DETAIL_TEXT'];
+
+                        if(
+                            is_array($arDetailPage) &&
+                            sizeof($arDetailPage)
+                        )
+                        {
+                            $arItem['DETAIL_TEXT'] = $arDetailPage['DETAIL_TEXT'];
+                        }
 
                         $arTranslitParams = array(
                             'max_len' => 100,
@@ -107,7 +115,7 @@ class CBParsingNews implements ParsingInterface
                             'DETAIL_PAGE_URL'  => $arItem['DETAIL_PAGE_URL'],
                             'PREVIEW_TEXT'     => $arItem['PREVIEW_TEXT'],
                             'PREVIEW_TEXT_TYPE'=> self::TEXT_TYPE,
-                            'DETAIL_TEXT'      => $arItem['DETAIL_TEXT'],
+                            'DETAIL_TEXT'      => $arItem['DETAIL_TEXT'] ? $arItem['DETAIL_TEXT'] : '',
                             'DETAIL_TEXT_TYPE' => self::TEXT_TYPE
                         );
 
@@ -121,6 +129,10 @@ class CBParsingNews implements ParsingInterface
                         }
                     }
                     unset($arItem);
+                }
+                else
+                {
+                    $this->logger->log(sprintf('Новостей за "%s" - нет.', date(self::FORMAT_DATE_1)));
                 }
             }
         }

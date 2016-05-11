@@ -22,6 +22,7 @@ class Parser implements SingletonInterface
     const USER_AGENT    = 'Opera/10.00 (Windows NT 5.1; U; ru) Presto/2.2.0';
     const FORMAT_DATE   = 'DD.MM.YYYY';
     const FORMAT_DATE_1 = 'd.m.Y';
+    const UPLOAD_DIR_PICTURE = '/home/c/cv24440/mltk/public_html/upload/parser_news_tmp/';
 
     /**
      * @var self
@@ -52,7 +53,7 @@ class Parser implements SingletonInterface
     {
         if (is_null(self::$instance))
         {
-            self::$instance = new self(new SourceFactory());
+            self::$instance = new self();
         }
 
         return self::$instance;
@@ -61,10 +62,10 @@ class Parser implements SingletonInterface
     /**
      * @param SourceFactory $sourceFactory
      */
-    protected function __construct($sourceClass)
+    protected function __construct($serverRoot)
     {
-        $this->sourceClass = $sourceClass;
         $this->logger = new \Your\Tools\Logger\FileLogger('parser.log');
+        $this->serverRoot = $serverRoot;
     }
 
     private function __clone()
@@ -72,49 +73,100 @@ class Parser implements SingletonInterface
     }
 
     /**
-     * @return string
-     */
-    public function getSourceClass()
-    {
-        return $this->sourceClass;
-    }
-
-    /**
-     */
-    private function buildSource()
-    {
-        SourceFactory::createSource($this->getSourceClass());
-    }
-
-    /**
+     * Получить страницу по URL
+     *
      * @param $url
      *
      * @return bool
+     * @throws \Exception
      */
-    public function getPage($url)
+    public function getPageByUrl($url)
     {
         if($url)
         {
-            $curl = curl_init();
+            $ch = curl_init();
 
-            curl_setopt($curl, CURLOPT_URL, $url);
-            curl_setopt($curl, CURLOPT_USERAGENT, self::USER_AGENT);
-            curl_setopt($curl, CURLOPT_FAILONERROR, 1);
-            curl_setopt($curl, CURLOPT_TIMEOUT, 30);
-            curl_setopt($curl, CURLOPT_HEADER, 0);
-            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
-            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
-            curl_setopt($curl, CURLOPT_FOLLOWLOCATION, 1);
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_USERAGENT, self::USER_AGENT);
+            curl_setopt($ch, CURLOPT_FAILONERROR, 1);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 
             ob_start();
-            curl_exec($curl);
-            curl_close($curl);
 
-            $this->htmlPage = ob_get_contents();
+            $rs = curl_exec($ch);
+            if($rs)
+            {
+                curl_close($ch);
+                $this->htmlPage = ob_get_contents();
+                ob_end_clean();
 
-            ob_end_clean();
+                return true;
+            }
+            else
+            {
+                throw new \Exception(curl_error($ch));
+            }
+        }
+        else
+        {
+            throw new \Exception('Параметр url для получения страницы не может быть пустым.');
+        }
+    }
 
-            return true;
+    /**
+     * Получить картинку по URL
+     *
+     * @param      $url
+     * @param null $path
+     *
+     * @return bool|string
+     * @throws \Exception
+     */
+    public function getImageByUrl($url, $path = self::UPLOAD_DIR_PICTURE)
+    {
+        if($url)
+        {
+            $ch = curl_init();
+
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+
+            $rs = curl_exec($ch);
+            if($rs)
+            {
+                if (
+                    curl_getinfo($ch, CURLINFO_HTTP_CODE) == 200 &&
+                    strpos(curl_getinfo($ch, CURLINFO_CONTENT_TYPE), 'image') !== false
+                )
+                {
+                    $name = substr($url, strrpos($url, '/') + 1);
+
+                    if ($path)
+                    {
+                        if (is_writeable($path))
+                        {
+                            file_put_contents(rtrim($path, '/') . '/' . $name, $rs);
+                        }
+                        else
+                        {
+                            throw new \Exception(sprintf('Недостаточно прав для записи в папку : %s', $path));
+                        }
+                    }
+                    return $path.$name;
+                }
+                curl_close($ch);
+                return false;
+            }
+            else
+            {
+                throw new \Exception('Не удалось получить картинку по cURL.');
+            }
         }
         else
         {
@@ -141,17 +193,10 @@ class Parser implements SingletonInterface
                 {
                     return $this->count;
                 }
-                else
-                {
-                    return false;
-                }
             }
-            else
-            {
-                return false;
-            }
+            return false;
         }
-        return false;
+        throw new \Exception('Не удалось получить количество элементов по паттерну.');
     }
 
     /**
@@ -159,9 +204,19 @@ class Parser implements SingletonInterface
      *
      * @return mixed
      */
-    public function removeHtmlComments($html)
+    public function delHtmlComments($html)
     {
         return preg_replace('/<!--(.*?)-->/', '', $html);
+    }
+
+    /**
+     * @param $path
+     *
+     * @return bool
+     */
+    public function delFileByPath($path)
+    {
+        return unlink($path);
     }
 
     /**
@@ -190,49 +245,40 @@ class Parser implements SingletonInterface
             $urlPage = $urlSite.$urlDetail;
             $arDetail = array();
 
-            if($urlPage)
+            if($this->getPageByUrl($urlPage))
             {
-                if($this->getPage($urlPage))
+                $objHtmlDetailPage = \phpQuery::newDocument($this->htmlPage);
+
+                if($patternDetailImages)
                 {
-                    $objHtmlDetailPage = \phpQuery::newDocument($this->htmlPage);
-
-                    if(
-                        is_array($arPatternsException) &&
-                        sizeof($arPatternsException)
-                    )
-                    {
-                        foreach ($arPatternsException as $arExceptionPattern)
-                        {
-                            $objHtmlDetailPage->find($arExceptionPattern)->remove();
-                        }
-                    }
-
-                    $detailObj = $objHtmlDetailPage->find($patternDetail);
-                    $arDetail['DETAIL_TEXT'] = $this->removeHtmlComments(
-                        trim(pq($detailObj)->html())
-                    );
-
-                    if($patternDetailImages)
-                    {
-                        $arDetail['DETAIL_PICTURE'] = '';
-                    }
-
-                    return $arDetail;
+                    $detailPage = $objHtmlDetailPage->find($patternDetailImages);
+                    $src = trim(pq($detailPage)->attr('src'));
+                    $arDetail['DETAIL_PICTURE'] = \CFile::MakeFileArray($this->getImageByUrl($src));
                 }
-                else
+
+                if(
+                    is_array($arPatternsException) &&
+                    sizeof($arPatternsException)
+                )
                 {
-                    return false;
+                    foreach ($arPatternsException as $arExceptionPattern)
+                    {
+                        $objHtmlDetailPage->find($arExceptionPattern)->remove();
+                    }
                 }
+
+                $detailObj = $objHtmlDetailPage->find($patternDetail);
+                $arDetail['DETAIL_TEXT'] = $this->delHtmlComments(
+                    trim(pq($detailObj)->html())
+                );
+                return $arDetail;
             }
             else
             {
                 return false;
             }
         }
-        else
-        {
-            return false;
-        }
+        return false;
     }
 
     /**
@@ -281,17 +327,13 @@ class Parser implements SingletonInterface
 
                 foreach ($arItems['DATE'] as $key => $value)
                 {
-                    //if($arItems['DATE'] == date(self::FORMAT_DATE_1))
-                    if($value == '28.04.2016')
+                    if(true)
                     {
                         $arResult['ITEMS'][] = array(
                             'DATE'              => $value,
                             'NAME'              => $arItems['NAME'][$key],
                             'DETAIL_PAGE_URL'   => $arItems['DETAIL_PAGE_URL'][$key],
                             'PREVIEW_TEXT'      => $arItems['PREVIEW_TEXT'][$key],
-                            'DETAIL_TEXT'       => '',
-                            'PREVIEW_PICTURE'   => array(),
-                            'DETAIL_PICTURE'    => array(),
                         );
                     }
                 }
@@ -302,7 +344,7 @@ class Parser implements SingletonInterface
                 }
                 else
                 {
-                    throw new \Exception('Список новостей пуст.');
+                    return false;
                 }
             }
             else
@@ -351,6 +393,10 @@ class Parser implements SingletonInterface
                 $strDate = implode('.', $arDate);
 
                 return $strDate;
+            }
+            elseif(mb_stripos($strDate, ':') !== false)
+            {
+                return date(self::FORMAT_DATE_1);
             }
             else
             {

@@ -28,6 +28,7 @@ class CRGParsingNews implements ParsingInterface
 {
     const TEXT_TYPE = 'html';
     const SITE_ID   = 's1';
+    const FORMAT_DATE_1 = 'd.m.Y';
 
     protected $urlFilter;
     protected $urlSite;
@@ -56,7 +57,7 @@ class CRGParsingNews implements ParsingInterface
     {
         $manager = \Your\Data\Bitrix\IBlockElementManager::getInstance();
 
-        $htmlPage = $this->source->getPage($this->urlFilter);
+        $htmlPage = $this->source->getPageByUrl($this->urlFilter);
 
         if($htmlPage)
         {
@@ -78,8 +79,6 @@ class CRGParsingNews implements ParsingInterface
                 {
                     $this->logger->log(sprintf('Новостей за сегодня: %s', $countCurDate));
 
-                    $patternDetailImages = '';
-
                     $arPatternsException = array(
                         'div.ga-element.b-read-more.b-read-more_230x200.b-read-more_left',
                         'div.ga-element.b-read-more.b-read-more_230x200.b-read-more_right',
@@ -93,10 +92,15 @@ class CRGParsingNews implements ParsingInterface
                             $this->urlSite,
                             $arItem['DETAIL_PAGE_URL'],
                             'article',
-                            $patternDetailImages,
+                            'div.b-material-img.b-material-img_art div img',
                             $arPatternsException
                         );
                         $arItem['DETAIL_TEXT'] = $arDetailPage['DETAIL_TEXT'];
+
+                        if($arDetailPage['DETAIL_PICTURE'])
+                        {
+                            $arItem['DETAIL_PICTURE'] = $arDetailPage['DETAIL_PICTURE'];
+                        }
 
                         $arTranslitParams = array(
                             'max_len' => 100,
@@ -115,16 +119,18 @@ class CRGParsingNews implements ParsingInterface
                             'IBLOCK_ID'        => $this->iBlockId,
                             'DATE_ACTIVE_FROM' => $arItem['DATE'],
                             'NAME'             => $arItem['NAME'],
-                            //'DETAIL_PAGE_URL'  => $arItem['DETAIL_PAGE_URL'],
                             'PREVIEW_TEXT'     => $arItem['PREVIEW_TEXT'],
                             'PREVIEW_TEXT_TYPE'=> self::TEXT_TYPE,
                             'DETAIL_TEXT'      => $arItem['DETAIL_TEXT'],
-                            'DETAIL_TEXT_TYPE' => self::TEXT_TYPE
+                            'DETAIL_TEXT_TYPE' => self::TEXT_TYPE,
+                            'DETAIL_PICTURE'   => is_array($arItem['DETAIL_PICTURE']) ? $arItem['DETAIL_PICTURE'] : '',
+                            'PREVIEW_PICTURE'   => is_array($arItem['DETAIL_PICTURE']) ? $arItem['DETAIL_PICTURE'] : ''
                         );
 
                         if ($id = $manager->add($arElement))
                         {
                             $this->logger->log(sprintf('Новость добавлена: "%s" (%s) ', $arItem['NAME'], $id));
+                            $this->source->delFileByPath($arItem['DETAIL_PICTURE']['tmp_name']);
                         }
                         else
                         {
@@ -132,6 +138,10 @@ class CRGParsingNews implements ParsingInterface
                         }
                     }
                     unset($arItem);
+                }
+                else
+                {
+                    $this->logger->log(sprintf('Новостей за "%s" - нет.', date(self::FORMAT_DATE_1)));
                 }
             }
         }
