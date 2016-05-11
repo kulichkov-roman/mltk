@@ -327,7 +327,7 @@ class Parser implements SingletonInterface
 
                 foreach ($arItems['DATE'] as $key => $value)
                 {
-                    if(true)
+                    if($value == date(self::FORMAT_DATE_1))
                     {
                         $arResult['ITEMS'][] = array(
                             'DATE'              => $value,
