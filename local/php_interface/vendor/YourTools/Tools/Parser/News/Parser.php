@@ -2,13 +2,10 @@
 namespace Your\Tools\Parser\News;
 
 use Your\Common\SingletonInterface;
-
 use Your\Exception\Data\Parsing\ParsingException;
-
-use Your\Tools\Parser\News\SourceFactory;
-use Your\Tools\Parser\News\SourceBP;
-
 use Your\Tools\Logger\FileLogger;
+
+use Your\Helpers\DateHelper as DateHelper;
 
 /**
  * Импорт новостей
@@ -40,13 +37,6 @@ class Parser implements SingletonInterface
     protected $count;
 
     /**
-     * Фабрика для обработки источника импорта
-     *
-     * @var SourceFactory
-     */
-    protected $sourceClass;
-
-    /**
      * @return self
      */
     public static function getInstance()
@@ -55,17 +45,26 @@ class Parser implements SingletonInterface
         {
             self::$instance = new self();
         }
-
         return self::$instance;
     }
 
     /**
-     * @param SourceFactory $sourceFactory
+     * @var Helper\DateHelper
      */
-    protected function __construct($serverRoot)
+    protected $dateHelper;
+
+    /**
+     * @var \StringHelper
+     */
+    protected $stringHelper;
+
+
+    protected function __construct()
     {
         $this->logger = new \Your\Tools\Logger\FileLogger('parser.log');
-        $this->serverRoot = $serverRoot;
+
+        $this->dateHelper = new \DateHelper;
+        $this->stringHelper = new \StringHelper;
     }
 
     private function __clone()
@@ -111,10 +110,7 @@ class Parser implements SingletonInterface
                 throw new \Exception(curl_error($ch));
             }
         }
-        else
-        {
-            throw new \Exception('Параметр url для получения страницы не может быть пустым.');
-        }
+        throw new \Exception('Параметр url для получения страницы не может быть пустым.');
     }
 
     /**
@@ -168,10 +164,7 @@ class Parser implements SingletonInterface
                 throw new \Exception('Не удалось получить картинку по cURL.');
             }
         }
-        else
-        {
-            return false;
-        }
+        return false;
     }
 
     /**
@@ -197,16 +190,6 @@ class Parser implements SingletonInterface
             return false;
         }
         throw new \Exception('Не удалось получить количество элементов по паттерну.');
-    }
-
-    /**
-     * @param $html
-     *
-     * @return mixed
-     */
-    public function delHtmlComments($html)
-    {
-        return preg_replace('/<!--(.*?)-->/', '', $html);
     }
 
     /**
@@ -268,7 +251,7 @@ class Parser implements SingletonInterface
                 }
 
                 $detailObj = $objHtmlDetailPage->find($patternDetail);
-                $arDetail['DETAIL_TEXT'] = $this->delHtmlComments(
+                $arDetail['DETAIL_TEXT'] = $this->stringHelper->removeHtmlComments(
                     trim(pq($detailObj)->html())
                 );
                 return $arDetail;
@@ -309,7 +292,7 @@ class Parser implements SingletonInterface
 
             foreach ($objHtmlPage->find($patternDate) as $date)
             {
-                $arItems['DATE'][] = $this->convertDate(trim(pq($date)->html()));
+                $arItems['DATE'][] = $this->dateHelper->convertDate(trim(pq($date)->html()));
             }
 
             if(sizeof($arItems['DATE']) > 0)
@@ -359,118 +342,6 @@ class Parser implements SingletonInterface
     }
 
     /**
-     * Конвертирование даты
-     *
-     * @param $date
-     *
-     * @return bool
-     */
-    public function convertDate($strDate)
-    {
-        if($strDate)
-        {
-            $arMonth = array(
-                'января',
-                'февраля',
-                'марта',
-                'апреля',
-                'мая',
-                'июня',
-                'июля',
-                'августа',
-                'сентября',
-                'октября',
-                'ноября',
-                'декабря',
-            );
-
-            if(mb_stripos($strDate, ',') !== false)
-            {
-                $strDate = mb_stristr($strDate, ', ', true);
-                $arDate  = ParseDateTime($strDate, self::FORMAT_DATE);
-                $num     = intval(array_search($arDate['MM'], $arMonth)) + 1;
-                $arDate['MM'] = str_pad($num, 2, '0', STR_PAD_LEFT);
-                $strDate = implode('.', $arDate);
-
-                return $strDate;
-            }
-            elseif(mb_stripos($strDate, ':') !== false)
-            {
-                return date(self::FORMAT_DATE_1);
-            }
-            else
-            {
-                return $strDate;
-            }
-        }
-        else
-        {
-            throw new \Exception('Дата не может быть пустой.');
-        }
-    }
-
-    /**
-     * Обрезать текст
-     *
-     * @param $str
-     * @param $intLen
-     *
-     * @return string
-     */
-    function getTruncateStr($str, $intLen)
-    {
-        if(strlen($str) > $intLen)
-        {
-            $str = iconv('UTF-8','windows-1251', $str );
-            $str = substr($str, 0, $intLen);
-            $str = iconv('windows-1251','UTF-8', $str );
-
-            return $str;
-        }
-        else
-        {
-            return $str;
-        }
-    }
-
-    /**
-     * Транслитирация русских символов
-     *
-     * @param $str
-     *
-     * @return mixed
-     */
-    public function getTranslitStr($str)
-    {
-        $arConverter = array(
-            'а' => 'a',   'б' => 'b',   'в' => 'v',
-            'г' => 'g',   'д' => 'd',   'е' => 'e',
-            'ё' => 'e',   'ж' => 'zh',  'з' => 'z',
-            'и' => 'i',   'й' => 'y',   'к' => 'k',
-            'л' => 'l',   'м' => 'm',   'н' => 'n',
-            'о' => 'o',   'п' => 'p',   'р' => 'r',
-            'с' => 's',   'т' => 't',   'у' => 'u',
-            'ф' => 'f',   'х' => 'h',   'ц' => 'c',
-            'ч' => 'ch',  'ш' => 'sh',  'щ' => 'sch',
-            'ь' => '\'',  'ы' => 'y',   'ъ' => '\'',
-            'э' => 'e',   'ю' => 'yu',  'я' => 'ya',
-
-            'А' => 'A',   'Б' => 'B',   'В' => 'V',
-            'Г' => 'G',   'Д' => 'D',   'Е' => 'E',
-            'Ё' => 'E',   'Ж' => 'Zh',  'З' => 'Z',
-            'И' => 'I',   'Й' => 'Y',   'К' => 'K',
-            'Л' => 'L',   'М' => 'M',   'Н' => 'N',
-            'О' => 'O',   'П' => 'P',   'Р' => 'R',
-            'С' => 'S',   'Т' => 'T',   'У' => 'U',
-            'Ф' => 'F',   'Х' => 'H',   'Ц' => 'C',
-            'Ч' => 'Ch',  'Ш' => 'Sh',  'Щ' => 'Sch',
-            'Ь' => '\'',  'Ы' => 'Y',   'Ъ' => '\'',
-            'Э' => 'E',   'Ю' => 'Yu',  'Я' => 'Ya',
-        );
-        return strtr($str, $arConverter);
-    }
-
-    /**
      * Получить символьный код элемента
      *
      * @param $str
@@ -479,12 +350,17 @@ class Parser implements SingletonInterface
      */
     public function getTranslitElementCode($str, $arParams)
     {
-        $str = $this->getTruncateStr($str, $arParams['max_len']);
-        $str = $this->getTranslitStr($str);
-        $str = strtolower($str);
-        $str = preg_replace('~[^-a-z0-9_]+~u', $arParams['replace_space'], $str);
-        $str = trim($str, $arParams['replace_other']);
-
+        $str = $this->stringHelper->getTruncateStr($str, $arParams['max_len']);
+        $str = $this->stringHelper->getTranslitStr($str);
+        $str = preg_replace(
+            '~[^-a-z0-9_]+~u', 
+            $arParams['replace_space'], 
+            strtolower($str)
+        );
+        $str = trim(
+            $str,
+            $arParams['replace_other']
+        );
         return $str;
     }
 }
