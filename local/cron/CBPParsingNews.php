@@ -1,5 +1,6 @@
 <?
 use Your\Tools\Data\Parsing\Common\ParsingInterface;
+use MLTK\Helper;
 
 define('BX_BUFFER_USED', true);
 define('NO_KEEP_STATISTIC', true);
@@ -34,6 +35,8 @@ class CBParsingNews implements ParsingInterface
     protected $urlSite;
     protected $iBlockId;
 
+    protected $stringHelper;
+
     private $source;
     private $logger;
 
@@ -45,6 +48,7 @@ class CBParsingNews implements ParsingInterface
         $this->source = \Your\Tools\Parser\News\Parser::getInstance();
         $this->logger = new \Your\Tools\Logger\FileLogger('parserCB.log');
         $this->iBlockId = \Your\Environment\EnvironmentManager::getInstance()->get('newsIBlockId');
+        $this->stringHelper = new \MLTK\Helper\StringHelper;
 
         $this->urlFilter = 'http://www.bigpowernews.ru/search/?reff_id=&smode=razdel&source=ALL&source2=BP&source3=BP&source4=BP&region=2405&rubrika_bpd=&theme=22420&theme_doc=9740&rubrika=2920&razdel=35&q=&select_enabled_from=&select_year_from=2016&select_month_from=4&select_day_from=22&type=&select_enabled_to=&select_year_to=2016&select_month_to=4&select_day_to=22&type=&page=&sortby=&perpage=&outtype=';
         $this->urlSite = 'www.bigpowernews.ru';
@@ -98,10 +102,12 @@ class CBParsingNews implements ParsingInterface
                         $arTranslitParams = array(
                             'max_len' => 100,
                             'replace_space' => '_',
-                            'replace_other' => '_'
+                            'replace_other' => '_',
+                            'pattern' => '~[^-a-z0-9_]+~u',
+                            'change_case' => 'L'
                         );
 
-                        $code = $this->source->getTranslitElementCode(
+                        $code = $this->stringHelper->getTranslitStr(
                             $arItem['NAME'],
                             $arTranslitParams
                         );

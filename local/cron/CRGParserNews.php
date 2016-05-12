@@ -1,5 +1,6 @@
 <?
 use Your\Tools\Data\Parsing\Common\ParsingInterface;
+use MLTK\Helper;
 
 define('BX_BUFFER_USED', true);
 define('NO_KEEP_STATISTIC', true);
@@ -34,6 +35,9 @@ class CRGParsingNews implements ParsingInterface
     protected $urlSite;
     protected $iBlockId;
 
+    protected $fileHelper;
+    protected $stringHelper;
+
     private $source;
     private $logger;
 
@@ -45,6 +49,8 @@ class CRGParsingNews implements ParsingInterface
         $this->source = \Your\Tools\Parser\News\Parser::getInstance();
         $this->logger = new \Your\Tools\Logger\FileLogger('parserRG.log');
         $this->iBlockId = \Your\Environment\EnvironmentManager::getInstance()->get('newsIBlockId');
+        $this->fileHelper = new \MLTK\Helper\FileHelper;
+        $this->stringHelper = new \MLTK\Helper\StringHelper;
 
         $this->urlFilter = 'http://rg.ru/tema/ekonomika/industria/energo/';
         $this->urlSite = 'www.rg.ru';
@@ -105,10 +111,12 @@ class CRGParsingNews implements ParsingInterface
                         $arTranslitParams = array(
                             'max_len' => 100,
                             'replace_space' => '_',
-                            'replace_other' => '_'
+                            'replace_other' => '_',
+                            'pattern' => '~[^-a-z0-9_]+~u',
+                            'change_case' => 'L'
                         );
 
-                        $code = $this->source->getTranslitElementCode(
+                        $code = $this->stringHelper->getTranslitStr(
                             $arItem['NAME'],
                             $arTranslitParams
                         );
@@ -130,7 +138,7 @@ class CRGParsingNews implements ParsingInterface
                         if ($id = $manager->add($arElement))
                         {
                             $this->logger->log(sprintf('Новость добавлена: "%s" (%s) ', $arItem['NAME'], $id));
-                            $this->source->delFileByPath($arItem['DETAIL_PICTURE']['tmp_name']);
+                            $this->fileHelper->removeFileByPath($arItem['DETAIL_PICTURE']['tmp_name']);
                         }
                         else
                         {
