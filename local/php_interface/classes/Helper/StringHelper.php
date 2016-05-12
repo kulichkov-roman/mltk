@@ -1,4 +1,7 @@
 <?
+
+namespace MLTK\Helper;
+
 /**
  * Хелпер для работы со строками
  *
@@ -8,9 +11,14 @@
  *
  * @author Kulichkov Roman <roman@kulichkov.pro>
  */
-
 class StringHelper
 {
+    /**
+     * StringHelper constructor.
+     */
+    public function __construct()
+    {}
+
     /**
      * Удалить комментарии из html
      *
@@ -31,7 +39,7 @@ class StringHelper
      *
      * @return string
      */
-    public static function getTruncateStr($str, $intLen)
+    public static function truncateStr($str, $intLen)
     {
         if(strlen($str) > $intLen)
         {
@@ -45,13 +53,13 @@ class StringHelper
     }
 
     /**
-     * Транслитирация русских символов
+     * Заменить символы
      *
      * @param $str
      *
      * @return mixed
      */
-    public static function getTranslitStr($str)
+    public static function replaceTranslitStr($str)
     {
         $arConverter = array(
             'а' => 'a',   'б' => 'b',   'в' => 'v',
@@ -79,6 +87,35 @@ class StringHelper
             'Э' => 'E',   'Ю' => 'Yu',  'Я' => 'Ya',
         );
         return strtr($str, $arConverter);
+    }
+
+    /**
+     * Преобразовать строку
+     *
+     * @param $str
+     *
+     * @return mixed
+     */
+    public function getTranslitStr($str, $arParams)
+    {
+        $str = $this->truncateStr($str, $arParams['max_len']);
+        $str = $this->replaceTranslitStr($str);
+
+        if($arParams["change_case"] == "L" || $arParams["change_case"] == "l")
+            $str = ToLower($str);
+        elseif($arParams["change_case"] == "U" || $arParams["change_case"] == "u")
+            $str = ToUpper($str);
+
+        $str = preg_replace(
+            $arParams['pattern'],
+            $arParams['replace_space'],
+            $str
+        );
+        $str = trim(
+            $str,
+            $arParams['replace_other']
+        );
+        return $str;
     }
 }
 ?>

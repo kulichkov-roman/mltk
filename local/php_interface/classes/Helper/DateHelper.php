@@ -1,6 +1,6 @@
 <?php
 
-namespace Your\Helpers;
+namespace MLTK\Helper;
 
 /**
  * Хелпер для работы с датами
@@ -11,9 +11,17 @@ namespace Your\Helpers;
  *
  * @author Kulichkov Roman <roman@kulichkov.pro>
  */
-
 class DateHelper
 {
+    const FORMAT_DATE = 'DD.MM.YYYY';
+    const FORMAT_DATE_1 = 'd.m.Y';
+
+    /**
+     * DateHelper constructor.
+     */
+    public function __construct()
+    {}
+
     /**
      * Конвертирование даты
      *
@@ -52,7 +60,7 @@ class DateHelper
             }
             elseif(mb_stripos($strDate, ':') !== false)
             {
-                return date('d.m.Y');
+                return date(self::FORMAT_DATE_1);
             }
             else
             {
