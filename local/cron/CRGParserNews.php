@@ -31,8 +31,8 @@ class CRGParsingNews implements ParsingInterface
     const SITE_ID   = 's1';
     const FORMAT_DATE_1 = 'd.m.Y';
 
-    protected $urlFilter;
-    protected $urlSite;
+    protected $url;
+    protected $domain;
     protected $iBlockId;
 
     protected $fileHelper;
@@ -52,8 +52,8 @@ class CRGParsingNews implements ParsingInterface
         $this->fileHelper = new \MLTK\Helper\FileHelper;
         $this->stringHelper = new \MLTK\Helper\StringHelper;
 
-        $this->urlFilter = 'http://rg.ru/tema/ekonomika/industria/energo/';
-        $this->urlSite = 'www.rg.ru';
+        $this->url = 'http://rg.ru/tema/ekonomika/industria/energo/';
+        $this->domain = 'www.rg.ru';
     }
 
     /**
@@ -63,11 +63,11 @@ class CRGParsingNews implements ParsingInterface
     {
         $manager = \Your\Data\Bitrix\IBlockElementManager::getInstance();
 
-        $htmlPage = $this->source->getPageByUrl($this->urlFilter);
+        $htmlPage = $this->source->getPageByUrl($this->url);
 
         if($htmlPage)
         {
-            $countSumList = $this->source->count('div.b-news-inner__list-item');
+            $countSumList = $this->source->getLengthElemByTag('div.b-news-inner__list-item');
             if($countSumList > 0)
             {
                 $this->logger->log(sprintf('Новостей на странице: %s', $countSumList));
@@ -95,7 +95,7 @@ class CRGParsingNews implements ParsingInterface
                     foreach($arResult['ITEMS'] as &$arItem)
                     {
                         $arDetailPage = $this->source->getElementDetail(
-                            $this->urlSite,
+                            $this->domain,
                             $arItem['DETAIL_PAGE_URL'],
                             'article',
                             'div.b-material-img.b-material-img_art div img',

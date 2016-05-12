@@ -27,12 +27,12 @@ if (!\CModule::IncludeModule('iblock'))
 
 class CBParsingNews implements ParsingInterface
 {
-    const TEXT_TYPE = 'html';
     const SITE_ID   = 's1';
+    const TEXT_TYPE = 'html';
     const FORMAT_DATE_1 = 'd.m.Y';
 
-    protected $urlFilter;
-    protected $urlSite;
+    protected $url;
+    protected $domain;
     protected $iBlockId;
 
     protected $stringHelper;
@@ -50,8 +50,8 @@ class CBParsingNews implements ParsingInterface
         $this->iBlockId = \Your\Environment\EnvironmentManager::getInstance()->get('newsIBlockId');
         $this->stringHelper = new \MLTK\Helper\StringHelper;
 
-        $this->urlFilter = 'http://www.bigpowernews.ru/search/?reff_id=&smode=razdel&source=ALL&source2=BP&source3=BP&source4=BP&region=2405&rubrika_bpd=&theme=22420&theme_doc=9740&rubrika=2920&razdel=35&q=&select_enabled_from=&select_year_from=2016&select_month_from=4&select_day_from=22&type=&select_enabled_to=&select_year_to=2016&select_month_to=4&select_day_to=22&type=&page=&sortby=&perpage=&outtype=';
-        $this->urlSite = 'www.bigpowernews.ru';
+        $this->url = 'http://www.bigpowernews.ru/search/?reff_id=&smode=razdel&source=ALL&source2=BP&source3=BP&source4=BP&region=2405&rubrika_bpd=&theme=22420&theme_doc=9740&rubrika=2920&razdel=35&q=&select_enabled_from=&select_year_from=2016&select_month_from=4&select_day_from=22&type=&select_enabled_to=&select_year_to=2016&select_month_to=4&select_day_to=22&type=&page=&sortby=&perpage=&outtype=';
+        $this->domain = 'www.bigpowernews.ru';
     }
 
     /**
@@ -61,11 +61,11 @@ class CBParsingNews implements ParsingInterface
     {
         $manager = \Your\Data\Bitrix\IBlockElementManager::getInstance();
 
-        $htmlPage = $this->source->getPageByUrl($this->urlFilter);
+        $htmlPage = $this->source->getPageByUrl($this->url);
 
         if($htmlPage)
         {
-            $countSumList = $this->source->count('table.sres');
+            $countSumList = $this->source->getLengthElemByTag('table.sres');
             if($countSumList > 0)
             {
                 $this->logger->log(sprintf('Новостей на странице: %s', $countSumList));
@@ -86,7 +86,7 @@ class CBParsingNews implements ParsingInterface
                     foreach($arResult['ITEMS'] as &$arItem)
                     {
                         $arDetailPage = $this->source->getElementDetail(
-                            $this->urlSite,
+                            $this->domain,
                             $arItem['DETAIL_PAGE_URL'],
                             'div.block_233'
                         );
