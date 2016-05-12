@@ -5,7 +5,7 @@ use Your\Common\SingletonInterface;
 use Your\Exception\Data\Parsing\ParsingException;
 use Your\Tools\Logger\FileLogger;
 
-use Your\Helpers\DateHelper as DateHelper;
+use MLTK\Helper;
 
 /**
  * Импорт новостей
@@ -17,8 +17,7 @@ use Your\Helpers\DateHelper as DateHelper;
 class Parser implements SingletonInterface
 {
     const USER_AGENT    = 'Opera/10.00 (Windows NT 5.1; U; ru) Presto/2.2.0';
-    const FORMAT_DATE   = 'DD.MM.YYYY';
-    const FORMAT_DATE_1 = 'd.m.Y';
+    const FORMAT_DATE = 'd.m.Y';
     const UPLOAD_DIR_PICTURE = '/home/c/cv24440/mltk/public_html/upload/parser_news_tmp/';
 
     /**
@@ -54,17 +53,19 @@ class Parser implements SingletonInterface
     protected $dateHelper;
 
     /**
-     * @var \StringHelper
+     * @var Helper\StringHelper
      */
     protected $stringHelper;
 
-
+    /**
+     * Parser constructor.
+     */
     protected function __construct()
     {
         $this->logger = new \Your\Tools\Logger\FileLogger('parser.log');
 
-        $this->dateHelper = new \DateHelper;
-        $this->stringHelper = new \StringHelper;
+        $this->dateHelper = new \MLTK\Helper\DateHelper;
+        $this->stringHelper = new \MLTK\Helper\StringHelper;
     }
 
     private function __clone()
@@ -192,15 +193,7 @@ class Parser implements SingletonInterface
         throw new \Exception('Не удалось получить количество элементов по паттерну.');
     }
 
-    /**
-     * @param $path
-     *
-     * @return bool
-     */
-    public function delFileByPath($path)
-    {
-        return unlink($path);
-    }
+
 
     /**
      * @param $urlSite
@@ -310,7 +303,7 @@ class Parser implements SingletonInterface
 
                 foreach ($arItems['DATE'] as $key => $value)
                 {
-                    if($value == date(self::FORMAT_DATE_1))
+                    if($value == date(self::FORMAT_DATE))
                     {
                         $arResult['ITEMS'][] = array(
                             'DATE'              => $value,
@@ -339,29 +332,6 @@ class Parser implements SingletonInterface
         {
             throw new \Exception('Не заполненны параметры для получения списка новостей.');
         }
-    }
-
-    /**
-     * Получить символьный код элемента
-     *
-     * @param $str
-     *
-     * @return mixed
-     */
-    public function getTranslitElementCode($str, $arParams)
-    {
-        $str = $this->stringHelper->getTruncateStr($str, $arParams['max_len']);
-        $str = $this->stringHelper->getTranslitStr($str);
-        $str = preg_replace(
-            '~[^-a-z0-9_]+~u', 
-            $arParams['replace_space'], 
-            strtolower($str)
-        );
-        $str = trim(
-            $str,
-            $arParams['replace_other']
-        );
-        return $str;
     }
 }
 ?>
