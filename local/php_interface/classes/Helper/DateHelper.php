@@ -25,11 +25,13 @@ class DateHelper
     /**
      * Конвертирование даты
      *
+     * @todo не универсальное решение
+     *
      * @param $date
      *
      * @return bool
      */
-    public static function convertDate($strDate)
+    public static function convertDate($strDate, $dateFormat = 'DD.MM.YYYY')
     {
         if($strDate)
         {
@@ -51,7 +53,7 @@ class DateHelper
             if(mb_stripos($strDate, ',') !== false)
             {
                 $strDate = mb_stristr($strDate, ', ', true);
-                $arDate  = ParseDateTime($strDate, self::FORMAT_DATE);
+                $arDate  = ParseDateTime($strDate, $dateFormat);
                 $num     = intval(array_search($arDate['MM'], $arMonth)) + 1;
                 $arDate['MM'] = str_pad($num, 2, '0', STR_PAD_LEFT);
                 $strDate = implode('.', $arDate);
@@ -61,6 +63,10 @@ class DateHelper
             elseif(mb_stripos($strDate, ':') !== false)
             {
                 return date(self::FORMAT_DATE_1);
+            }
+            elseif(mb_stripos($strDate, '/') !== false)
+            {
+                return implode('.', ParseDateTime($strDate, $dateFormat));
             }
             else
             {

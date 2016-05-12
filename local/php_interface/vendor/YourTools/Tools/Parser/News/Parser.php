@@ -20,24 +20,14 @@ class Parser implements SingletonInterface
     const FORMAT_DATE = 'd.m.Y';
     const UPLOAD_DIR_PICTURE = '/home/c/cv24440/mltk/public_html/upload/parser_news_tmp/';
 
-    /**
-     * @var self
-     */
     protected static $instance = null;
 
-    /**
-     * @var
-     */
     protected $htmlPage;
-
-    /**
-     * @var
-     */
     protected $count;
 
-    /**
-     * @return self
-     */
+    protected $dateHelper;
+    protected $stringHelper;
+
     public static function getInstance()
     {
         if (is_null(self::$instance))
@@ -48,22 +38,10 @@ class Parser implements SingletonInterface
     }
 
     /**
-     * @var Helper\DateHelper
-     */
-    protected $dateHelper;
-
-    /**
-     * @var Helper\StringHelper
-     */
-    protected $stringHelper;
-
-    /**
      * Parser constructor.
      */
     protected function __construct()
     {
-        $this->logger = new \Your\Tools\Logger\FileLogger('parser.log');
-
         $this->dateHelper = new \MLTK\Helper\DateHelper;
         $this->stringHelper = new \MLTK\Helper\StringHelper;
     }
@@ -169,11 +147,13 @@ class Parser implements SingletonInterface
     }
 
     /**
+     * Получить количество элеметов по тегу
+     *
      * @param $pattern
      *
      * @throws \Exception
      */
-    public function count($pattern)
+    public function getLengthElemByTag($pattern)
     {
         if($pattern)
         {
@@ -193,9 +173,9 @@ class Parser implements SingletonInterface
         throw new \Exception('Не удалось получить количество элементов по паттерну.');
     }
 
-
-
     /**
+     * Получить детальную страницу
+     *
      * @param $urlSite
      * @param $urlDetail
      * @param $patternDetail
@@ -213,7 +193,6 @@ class Parser implements SingletonInterface
     )
     {
         if(
-            $urlSite &&
             $urlDetail &&
             $patternDetail
         )
@@ -227,8 +206,9 @@ class Parser implements SingletonInterface
 
                 if($patternDetailImages)
                 {
-                    $detailPage = $objHtmlDetailPage->find($patternDetailImages);
-                    $src = trim(pq($detailPage)->attr('src'));
+                    $detailImages = $objHtmlDetailPage->find($patternDetailImages);
+                    $src = trim(pq($detailImages)->attr('src'));
+
                     $arDetail['DETAIL_PICTURE'] = \CFile::MakeFileArray($this->getImageByUrl($src));
                 }
 
@@ -256,6 +236,8 @@ class Parser implements SingletonInterface
         }
         return false;
     }
+
+
 
     /**
      * Упаковка html в массив объектов для списка
@@ -285,7 +267,12 @@ class Parser implements SingletonInterface
 
             foreach ($objHtmlPage->find($patternDate) as $date)
             {
-                $arItems['DATE'][] = $this->dateHelper->convertDate(trim(pq($date)->html()));
+                $strDate = trim(pq($date)->html());
+
+                $arItems['DATE'][] = $this->dateHelper->convertDate(
+                    $strDate,
+                    'DD/MM/YYYY'
+                );
             }
 
             if(sizeof($arItems['DATE']) > 0)
