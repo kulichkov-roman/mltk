@@ -114,8 +114,6 @@ class AutoLoader
 	 */
 	private static function logToFile($data)
 	{
-		echo "<pre>"; var_dump(self::getBasePath() . '/MLTKAutoLoad.log'); echo "</pre>";
-
 		$file = fopen(self::getBasePath() . '/MLTKAutoLoad.log', 'a');
 
 		flock($file, LOCK_EX);
