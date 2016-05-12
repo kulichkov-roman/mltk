@@ -13,6 +13,8 @@ namespace MLTK;
  */
 class AutoLoader
 {
+	const DEBUG_MODE = false;
+
 	const PROJECT_NAMESPACE = 'MLTK';
 
 	static private $recursiveSearch = true;
@@ -52,9 +54,18 @@ class AutoLoader
 		$filePath = self::generateFilePath($path, $file);
 
 		if (file_exists($filePath)) {
+
+			if (self::DEBUG_MODE) {
+				self::logToFile('Load ' . $filePath);
+			}
+
 			require_once($filePath);
 		} else {
 			self::$recursiveSearch = true;
+
+			if (self::DEBUG_MODE) {
+				self::logToFile(('начинаем рекурсивный поиск'));
+			}
 
 			self::recursiveLoad($file, $path);
 		}
@@ -72,7 +83,17 @@ class AutoLoader
 					$path2 = $path . '/' . $dir;
 					$filePath = $path2 . '/' . $file . '.php';
 
+					if (self::DEBUG_MODE)
+					{
+						self::logToFile('Search ' . $file . ' in ' . $filePath);
+					}
+
 					if (file_exists($filePath)) {
+
+						if (self::DEBUG_MODE) {
+							self::logToFile('Load ' . $filePath);
+						}
+
 						self::$recursiveSearch = false;
 
 						require_once($filePath);
@@ -86,5 +107,20 @@ class AutoLoader
 
 			closedir($handle);
 		}
+	}
+
+	/**
+	 * @param string $data
+	 */
+	private static function logToFile($data)
+	{
+		echo "<pre>"; var_dump(self::getBasePath() . '/MLTKAutoLoad.log'); echo "</pre>";
+
+		$file = fopen(self::getBasePath() . '/MLTKAutoLoad.log', 'a');
+
+		flock($file, LOCK_EX);
+		fwrite($file, date('d.m.Y H:i:s') . ': ' . $data . PHP_EOL);
+		flock($file, LOCK_UN);
+		fclose($file);
 	}
 }
