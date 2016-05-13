@@ -86,10 +86,22 @@ class CRGParsingNews implements ParsingInterface
                     $this->logger->log(sprintf('Новостей за сегодня: %s', $countCurDate));
 
                     $arPatternsException = array(
-                        'div.ga-element.b-read-more.b-read-more_230x200.b-read-more_left',
-                        'div.ga-element.b-read-more.b-read-more_230x200.b-read-more_right',
-                        'div.b-read-more.b-read-more_50x50.b-read-more_left',
-                        'div.b-material-img.b-material-img_art'
+                        array(
+                            'TYPE' => 'tag',
+                            'TAGS' => 'div.ga-element.b-read-more.b-read-more_230x200.b-read-more_left'
+                        ),
+                        array(
+                            'TYPE' => 'tag',
+                            'TAGS' => 'div.ga-element.b-read-more.b-read-more_230x200.b-read-more_right'
+                        ),
+                        array(
+                            'TYPE' => 'tag',
+                            'TAGS' => 'div.b-read-more.b-read-more_50x50.b-read-more_left'
+                        ),
+                        array(
+                            'TYPE' => 'tag',
+                            'TAGS' => 'div.b-material-img.b-material-img_art'
+                        ),
                     );
 
                     foreach($arResult['ITEMS'] as &$arItem)

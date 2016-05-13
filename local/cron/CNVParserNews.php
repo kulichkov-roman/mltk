@@ -116,9 +116,14 @@ class CNVParsingNews implements ParsingInterface
                                 'TAGS' => 'div.post div.clear'
                             ),
                             array(
-                                'TYPE' => 'style',
-                                'TAGS' => 'p',
-                                'STYLE' => 'font-size:0px;height:0px;line-height:0px;margin:0;padding:0;clear:both'
+                                'TYPE'  => 'style',
+                                'TAGS'  => 'div.post p',
+                                'STYLE' => 'font-size: 0.8em;'
+                            ),
+                            array(
+                                'TYPE'  => 'style',
+                                'TAGS'  => 'div.post div',
+                                'STYLE' => 'font-size: 0.8em;'
                             )
                         );
 
