@@ -219,31 +219,7 @@ class Parser implements SingletonInterface
                 {
                     foreach ($arPatternsException as $arExceptionPattern)
                     {
-                        if($arExceptionPattern['TYPE'] == 'tag')
-                        {
-                            $objHtmlDetailPage->find($arExceptionPattern['TAGS'])->remove();
-                        }
-                        elseif($arExceptionPattern['TYPE'] == 'style')
-                        {
-                            if($arExceptionPattern['STYLE'])
-                            {
-                                /**
-                                 * @todo не работает, после правки, отписаться 1 час 30 минут на доработку
-                                 */
-
-                                $patternHtmlFromTag = $objHtmlDetailPage->find($arExceptionPattern['TAGS']);
-
-                                $style = pq($patternHtmlFromTag)->attr('style');
-                                if($style)
-                                {
-                                    $objPatternHtmlFromTag = \phpQuery::newDocument($patternHtmlFromTag);
-                                    if($style == $arExceptionPattern['STYLE'])
-                                    {
-                                        $objHtmlDetailPage->find($objPatternHtmlFromTag['TAGS'])->remove();
-                                    }
-                                }
-                            }
-                        }
+                        $objHtmlDetailPage->find($arExceptionPattern)->remove();
                     }
                 }
 

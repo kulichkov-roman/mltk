@@ -69,6 +69,7 @@ class CNVParsingNews implements ParsingInterface
     public function up()
     {
         $manager = \Your\Data\Bitrix\IBlockElementManager::getInstance();
+        $environment = \Your\Environment\EnvironmentManager::getInstance();
 
         foreach($this->arUrls as $url)
         {
@@ -95,36 +96,14 @@ class CNVParsingNews implements ParsingInterface
                         $this->logger->log(sprintf('Новостей за сегодня: %s', $countCurDate));
 
                         $arPatternsException = array(
-                            array(
-                                'TYPE' => 'tag',
-                                'TAGS' => 'div.post noindex'
-                            ),
-                            array(
-                                'TYPE' => 'tag',
-                                'TAGS' => 'div.post div.wp-caption.alignleft'
-                            ),
-                            array(
-                                'TYPE' => 'tag',
-                                'TAGS' => 'div.post script'
-                            ),
-                            array(
-                                'TYPE' => 'tag',
-                                'TAGS' => 'div.post p#last'
-                            ),
-                            array(
-                                'TYPE' => 'tag',
-                                'TAGS' => 'div.post div.clear'
-                            ),
-                            array(
-                                'TYPE'  => 'style',
-                                'TAGS'  => 'div.post p',
-                                'STYLE' => 'font-size: 0.8em;'
-                            ),
-                            array(
-                                'TYPE'  => 'style',
-                                'TAGS'  => 'div.post div',
-                                'STYLE' => 'font-size: 0.8em;'
-                            )
+                            'div.post noindex',
+                            'div.post div.wp-caption.alignleft',
+                            'div.post script',
+                            'div.post p#last',
+                            'div.post div.clear',
+                            'div.post p[style="font-size: 0.8em;"]',
+                            'div.post div[style="float:left;margin:5px 5px 5px 0;"]',
+                            'div.post div[style="font-size:0px;height:0px;line-height:0px;margin:0;padding:0;clear:both"]',
                         );
 
                         foreach($arResult['ITEMS'] as &$arItem)
@@ -163,19 +142,23 @@ class CNVParsingNews implements ParsingInterface
                                 $arTranslitParams
                             );
 
+                            $arProps = array(
+                                $environment->get('newsPropsId') => $arItem['DETAIL_PAGE_URL']
+                            );
+
                             $arElement = array(
                                 'SITE_ID'          => self::SITE_ID,
                                 'CODE'             => $code,
                                 'IBLOCK_ID'        => $this->iBlockId,
                                 'DATE_ACTIVE_FROM' => $arItem['DATE'],
                                 'NAME'             => $arItem['NAME'],
-                                'DETAIL_PAGE_URL'  => $arItem['DETAIL_PAGE_URL'],
                                 'PREVIEW_TEXT'     => $arItem['PREVIEW_TEXT'],
                                 'PREVIEW_TEXT_TYPE' => self::TEXT_TYPE,
                                 'DETAIL_TEXT'      => $arItem['DETAIL_TEXT'] ? $arItem['DETAIL_TEXT'] : '',
                                 'DETAIL_TEXT_TYPE' => self::TEXT_TYPE,
                                 'DETAIL_PICTURE'   => is_array($arItem['DETAIL_PICTURE']) ? $arItem['DETAIL_PICTURE'] : '',
-                                'PREVIEW_PICTURE'  => is_array($arItem['DETAIL_PICTURE']) ? $arItem['DETAIL_PICTURE'] : ''
+                                'PREVIEW_PICTURE'  => is_array($arItem['DETAIL_PICTURE']) ? $arItem['DETAIL_PICTURE'] : '',
+                                'PROPERTY_VALUES'  => $arProps
                             );
 
                             if ($id = $manager->add($arElement))

@@ -9,6 +9,7 @@
 			 *
 			 */
 			'newsIBlockId' => 6,
+			'newsPropsId' => 114,
 		)
 	)
 );
