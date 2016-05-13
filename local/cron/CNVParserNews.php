@@ -94,13 +94,42 @@ class CNVParsingNews implements ParsingInterface
                     {
                         $this->logger->log(sprintf('Новостей за сегодня: %s', $countCurDate));
 
+                        $arPatternsException = array(
+                            array(
+                                'TYPE' => 'tag',
+                                'TAGS' => 'div.post noindex'
+                            ),
+                            array(
+                                'TYPE' => 'tag',
+                                'TAGS' => 'div.post div.wp-caption.alignleft'
+                            ),
+                            array(
+                                'TYPE' => 'tag',
+                                'TAGS' => 'div.post script'
+                            ),
+                            array(
+                                'TYPE' => 'tag',
+                                'TAGS' => 'div.post p#last'
+                            ),
+                            array(
+                                'TYPE' => 'tag',
+                                'TAGS' => 'div.post div.clear'
+                            ),
+                            array(
+                                'TYPE' => 'style',
+                                'TAGS' => 'p',
+                                'STYLE' => 'font-size:0px;height:0px;line-height:0px;margin:0;padding:0;clear:both'
+                            )
+                        );
+
                         foreach($arResult['ITEMS'] as &$arItem)
                         {
                             $arDetailPage = $this->source->getElementDetail(
                                 '',
                                 $arItem['DETAIL_PAGE_URL'],
                                 'div.post',
-                                'div.wp-caption a img'
+                                'div.wp-caption a img',
+                                $arPatternsException
                             );
 
                             if(
