@@ -62,6 +62,7 @@ class CRGParsingNews implements ParsingInterface
     public function up()
     {
         $manager = \Your\Data\Bitrix\IBlockElementManager::getInstance();
+        $environment = \Your\Environment\EnvironmentManager::getInstance();
 
         $htmlPage = $this->source->getPageByUrl($this->url);
 
@@ -86,22 +87,10 @@ class CRGParsingNews implements ParsingInterface
                     $this->logger->log(sprintf('Новостей за сегодня: %s', $countCurDate));
 
                     $arPatternsException = array(
-                        array(
-                            'TYPE' => 'tag',
-                            'TAGS' => 'div.ga-element.b-read-more.b-read-more_230x200.b-read-more_left'
-                        ),
-                        array(
-                            'TYPE' => 'tag',
-                            'TAGS' => 'div.ga-element.b-read-more.b-read-more_230x200.b-read-more_right'
-                        ),
-                        array(
-                            'TYPE' => 'tag',
-                            'TAGS' => 'div.b-read-more.b-read-more_50x50.b-read-more_left'
-                        ),
-                        array(
-                            'TYPE' => 'tag',
-                            'TAGS' => 'div.b-material-img.b-material-img_art'
-                        ),
+                        'div.ga-element.b-read-more.b-read-more_230x200.b-read-more_left',
+                        'div.ga-element.b-read-more.b-read-more_230x200.b-read-more_right',
+                        'div.b-read-more.b-read-more_50x50.b-read-more_left',
+                        'div.b-material-img.b-material-img_art'
                     );
 
                     foreach($arResult['ITEMS'] as &$arItem)
@@ -133,6 +122,10 @@ class CRGParsingNews implements ParsingInterface
                             $arTranslitParams
                         );
 
+                        $arProps = array(
+                            $environment->get('newsPropsId') => $this->domain.$arItem['DETAIL_PAGE_URL']
+                        );
+
                         $arElement = array(
                             'SITE_ID'          => self::SITE_ID,
                             'CODE'             => $code,
@@ -144,7 +137,8 @@ class CRGParsingNews implements ParsingInterface
                             'DETAIL_TEXT'      => $arItem['DETAIL_TEXT'],
                             'DETAIL_TEXT_TYPE' => self::TEXT_TYPE,
                             'DETAIL_PICTURE'   => is_array($arItem['DETAIL_PICTURE']) ? $arItem['DETAIL_PICTURE'] : '',
-                            'PREVIEW_PICTURE'   => is_array($arItem['DETAIL_PICTURE']) ? $arItem['DETAIL_PICTURE'] : ''
+                            'PREVIEW_PICTURE'   => is_array($arItem['DETAIL_PICTURE']) ? $arItem['DETAIL_PICTURE'] : '',
+                            'PROPERTY_VALUES'  => $arProps
                         );
 
                         if ($id = $manager->add($arElement))

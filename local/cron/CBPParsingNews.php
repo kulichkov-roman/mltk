@@ -60,6 +60,7 @@ class CBParsingNews implements ParsingInterface
     public function up()
     {
         $manager = \Your\Data\Bitrix\IBlockElementManager::getInstance();
+        $environment = \Your\Environment\EnvironmentManager::getInstance();
 
         $htmlPage = $this->source->getPageByUrl($this->url);
 
@@ -112,6 +113,10 @@ class CBParsingNews implements ParsingInterface
                             $arTranslitParams
                         );
 
+                        $arProps = array(
+                            $environment->get('newsPropsId') => $this->domain.$arItem['DETAIL_PAGE_URL']
+                        );
+
                         $arElement = array(
                             'SITE_ID'          => self::SITE_ID,
                             'CODE'             => $code,
@@ -122,7 +127,8 @@ class CBParsingNews implements ParsingInterface
                             'PREVIEW_TEXT'     => $arItem['PREVIEW_TEXT'],
                             'PREVIEW_TEXT_TYPE'=> self::TEXT_TYPE,
                             'DETAIL_TEXT'      => $arItem['DETAIL_TEXT'] ? $arItem['DETAIL_TEXT'] : '',
-                            'DETAIL_TEXT_TYPE' => self::TEXT_TYPE
+                            'DETAIL_TEXT_TYPE' => self::TEXT_TYPE,
+                            'PROPERTY_VALUES'  => $arProps
                         );
 
                         if ($id = $manager->add($arElement))
