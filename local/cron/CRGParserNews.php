@@ -99,7 +99,7 @@ class CRGParsingNews implements ParsingInterface
                             $this->domain,
                             $arItem['DETAIL_PAGE_URL'],
                             'article',
-                            '',
+                            'div.b-material-img.b-material-img_art div img',
                             $arPatternsException
                         );
                         $arItem['DETAIL_TEXT'] = $arDetailPage['DETAIL_TEXT'];
@@ -137,7 +137,7 @@ class CRGParsingNews implements ParsingInterface
                             'DETAIL_TEXT'      => $arItem['DETAIL_TEXT'],
                             'DETAIL_TEXT_TYPE' => self::TEXT_TYPE,
                             'DETAIL_PICTURE'   => is_array($arItem['DETAIL_PICTURE']) ? $arItem['DETAIL_PICTURE'] : '',
-                            'PREVIEW_PICTURE'   => is_array($arItem['DETAIL_PICTURE']) ? $arItem['DETAIL_PICTURE'] : '',
+                            'PREVIEW_PICTURE'  => is_array($arItem['DETAIL_PICTURE']) ? $arItem['DETAIL_PICTURE'] : '',
                             'PROPERTY_VALUES'  => $arProps
                         );
 
