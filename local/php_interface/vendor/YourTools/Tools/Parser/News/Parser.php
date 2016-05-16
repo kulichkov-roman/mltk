@@ -189,7 +189,8 @@ class Parser implements SingletonInterface
         $urlDetail,
         $patternDetail,
         $patternDetailImages = null,
-        $arPatternsException = array()
+        $arPatternsException = array(),
+        $arParserDetailParams = array()
     )
     {
         if(
@@ -236,8 +237,6 @@ class Parser implements SingletonInterface
         }
         return false;
     }
-
-
 
     /**
      * Упаковка html в массив объектов для списка
@@ -291,7 +290,7 @@ class Parser implements SingletonInterface
                 foreach ($arItems['DATE'] as $key => $value)
                 {
                     //if($value == date(self::FORMAT_DATE))
-                    if($value == '11.05.2016')
+                    if($value == '12.05.2016')
                     {
                         $arResult['ITEMS'][] = array(
                             'DATE'              => $value,

@@ -99,7 +99,7 @@ class CRGParsingNews implements ParsingInterface
                             $this->domain,
                             $arItem['DETAIL_PAGE_URL'],
                             'article',
-                            'div.b-material-img.b-material-img_art div img',
+                            '',
                             $arPatternsException
                         );
                         $arItem['DETAIL_TEXT'] = $arDetailPage['DETAIL_TEXT'];
