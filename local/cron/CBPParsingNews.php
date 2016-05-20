@@ -2,6 +2,8 @@
 use Your\Tools\Data\Parsing\Common\ParsingInterface;
 use MLTK\Helper;
 
+file_get_contents(date('Y-m-d H:i:s'), '/test.txt');
+
 define('BX_BUFFER_USED', true);
 define('NO_KEEP_STATISTIC', true);
 define('NOT_CHECK_PERMISSIONS', true);
@@ -15,6 +17,9 @@ if (empty($_SERVER['DOCUMENT_ROOT'])) {
 }
 
 require($_SERVER['DOCUMENT_ROOT'] . '/bitrix/modules/main/include/prolog_before.php');
+
+@set_time_limit(0);
+@ignore_user_abort(true);
 
 while (ob_get_level()) {
     ob_end_flush();
