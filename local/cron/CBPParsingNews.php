@@ -2,8 +2,6 @@
 use Your\Tools\Data\Parsing\Common\ParsingInterface;
 use MLTK\Helper;
 
-file_get_contents(date('Y-m-d H:i:s'), '/test.txt');
-
 define('BX_BUFFER_USED', true);
 define('NO_KEEP_STATISTIC', true);
 define('NOT_CHECK_PERMISSIONS', true);
