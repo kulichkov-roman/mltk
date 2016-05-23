@@ -90,7 +90,8 @@ class CRGParsingNews implements ParsingInterface
                         'div.ga-element.b-read-more.b-read-more_230x200.b-read-more_left',
                         'div.ga-element.b-read-more.b-read-more_230x200.b-read-more_right',
                         'div.b-read-more.b-read-more_50x50.b-read-more_left',
-                        'div.b-material-img.b-material-img_art'
+                        'div.b-material-img.b-material-img_art',
+                        'div.b-read-more.b-read-more_wide'
                     );
 
                     foreach($arResult['ITEMS'] as &$arItem)
