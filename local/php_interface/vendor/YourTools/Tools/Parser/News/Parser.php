@@ -250,7 +250,8 @@ class Parser implements SingletonInterface
     public function getElementList(
         $patternDate,
         $patternDetailPageUrl,
-        $patternPreviewText
+        $patternPreviewText,
+        $curDate
     )
     {
         if(
@@ -289,7 +290,12 @@ class Parser implements SingletonInterface
 
                 foreach ($arItems['DATE'] as $key => $value)
                 {
-                    if($value == date(self::FORMAT_DATE))
+                    if(!$curDate)
+                    {
+                        $curDate = date(self::FORMAT_DATE);
+                    }
+
+                    if($value == $curDate)
                     //if($value == '19.05.2016')
                     {
                         $arResult['ITEMS'][] = array(

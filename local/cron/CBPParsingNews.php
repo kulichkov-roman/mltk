@@ -74,11 +74,15 @@ class CBParsingNews implements ParsingInterface
             {
                 $this->logger->log(sprintf('Новостей на странице: %s', $countSumList));
 
+                $date = new \DateTime();
+                $date->modify('-1 day');
+
                 $arResult = array(
                     'ITEMS' => $this->source->getElementList(
                         'table.sres td.text_81',
                         'table.sres td.pad_65 a',
-                        'table.sres div.text_82'
+                        'table.sres div.text_82',
+                        $date->format('d.m.Y')
                     )
                 );
 
