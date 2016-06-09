@@ -58,7 +58,8 @@ class CNVParsingNews implements ParsingInterface
             'http://novostienergetiki.ru/category/lyudi-v-energetike/',
             'http://novostienergetiki.ru/category/%D1%8D%D0%BD%D0%B5%D1%80%D0%B3%D0%BE%D1%81%D0%B1%D0%B5%D1%80%D0%B5%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5/',
             'http://novostienergetiki.ru/category/stati-po-energetike/',
-            'http://novostienergetiki.ru/category/energosnabzhenie-2/'
+            'http://novostienergetiki.ru/category/energosnabzhenie-2/',
+            'http://novostienergetiki.ru/category/energetika-i-fondovyj-rynok/'
         );
         $this->domain = 'http://novostienergetiki.ru/';
     }

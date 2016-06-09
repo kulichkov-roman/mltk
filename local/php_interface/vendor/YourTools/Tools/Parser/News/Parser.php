@@ -296,7 +296,7 @@ class Parser implements SingletonInterface
                     }
 
                     if($value == $curDate)
-                    //if($value == '19.05.2016')
+                    //if($value == '06.06.2016')
                     {
                         $arResult['ITEMS'][] = array(
                             'DATE'              => $value,
