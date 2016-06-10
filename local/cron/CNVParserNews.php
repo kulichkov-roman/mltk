@@ -10,7 +10,7 @@ define('STOP_STATISTICS', true);
 define('SITE_ID', 's1');
 
 if (empty($_SERVER['DOCUMENT_ROOT'])) {
-    $_SERVER['HTTP_HOST'] = 'mltk.cv24440.tmweb.ru';
+    $_SERVER['HTTP_HOST'] = 'prrrrit7.bget.ru';
     $_SERVER['DOCUMENT_ROOT'] = realpath(__DIR__ . '/../../');
 }
 

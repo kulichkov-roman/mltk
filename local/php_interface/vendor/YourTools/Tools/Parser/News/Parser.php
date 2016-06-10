@@ -17,8 +17,8 @@ use MLTK\Helper;
 class Parser implements SingletonInterface
 {
     const USER_AGENT    = 'Opera/10.00 (Windows NT 5.1; U; ru) Presto/2.2.0';
-    const FORMAT_DATE = 'd.m.Y';
-    const UPLOAD_DIR_PICTURE = '/home/c/cv24440/mltk/public_html/upload/parser_news_tmp/';
+    const FORMAT_DATE   = 'd.m.Y';
+    const UPLOAD_DIR_PICTURE = '/home/p/prrrrit7/prrrrit7.bget.ru/public_html/upload/parser_news_tmp/';
 
     protected static $instance = null;
 
