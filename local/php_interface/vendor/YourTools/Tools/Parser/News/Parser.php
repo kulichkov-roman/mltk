@@ -130,6 +130,8 @@ class Parser implements SingletonInterface
                         }
                         else
                         {
+                            $logger = new \Your\Tools\Logger\FileLogger('parserNV.log');
+                            $logger->log(sprintf('Недостаточно прав для записи в папку : %s', $path));
                             throw new \Exception(sprintf('Недостаточно прав для записи в папку : %s', $path));
                         }
                     }
@@ -140,6 +142,8 @@ class Parser implements SingletonInterface
             }
             else
             {
+                $logger = new \Your\Tools\Logger\FileLogger('parserNV.log');
+                $logger->log(sprintf('Не удалось получить картинку по cURL.'));
                 throw new \Exception('Не удалось получить картинку по cURL.');
             }
         }
